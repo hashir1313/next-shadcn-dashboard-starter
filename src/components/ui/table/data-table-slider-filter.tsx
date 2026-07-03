@@ -120,32 +120,27 @@ export function DataTableSliderFilter<TData>({ column, title }: DataTableSliderF
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button variant='outline' size='sm' className='border-dashed'>
-          {columnFilterValue ? (
-            <button
-              type='button'
-              aria-label={`Clear ${title} filter`}
-              className='focus-visible:ring-ring rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:outline-none'
-              onClick={onReset}
-            >
-              <Icons.xCircle />
-            </button>
-          ) : (
-            <Icons.plusCircle />
-          )}
-          <span>{title}</span>
-          {columnFilterValue ? (
-            <>
-              <Separator
-                orientation='vertical'
-                className='mx-0.5 data-[orientation=vertical]:h-4'
-              />
-              {formatValue(columnFilterValue[0])} - {formatValue(columnFilterValue[1])}
-              {unit ? ` ${unit}` : ''}
-            </>
-          ) : null}
-        </Button>
+      <PopoverTrigger render={<Button variant='outline' size='sm' className='border-dashed' />}>
+        {columnFilterValue ? (
+          <button
+            type='button'
+            aria-label={`Clear ${title} filter`}
+            className='focus-visible:ring-ring rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:outline-none'
+            onClick={onReset}
+          >
+            <Icons.xCircle />
+          </button>
+        ) : (
+          <Icons.plusCircle />
+        )}
+        <span>{title}</span>
+        {columnFilterValue ? (
+          <>
+            <Separator orientation='vertical' className='mx-0.5 data-[orientation=vertical]:h-4' />
+            {formatValue(columnFilterValue[0])} - {formatValue(columnFilterValue[1])}
+            {unit ? ` ${unit}` : ''}
+          </>
+        ) : null}
       </PopoverTrigger>
       <PopoverContent align='start' className='flex w-auto flex-col gap-4'>
         <div className='flex flex-col gap-3'>
