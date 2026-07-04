@@ -24,14 +24,16 @@ export function UserNav() {
           <UserAvatarProfile user={user} />
         </DropdownMenuTrigger>
         <DropdownMenuContent className='w-56' align='end' sideOffset={10}>
-          <DropdownMenuLabel className='font-normal'>
-            <div className='flex flex-col space-y-1'>
-              <p className='text-sm leading-none font-medium'>{user.fullName}</p>
-              <p className='text-muted-foreground text-xs leading-none'>
-                {user.emailAddresses[0].emailAddress}
-              </p>
-            </div>
-          </DropdownMenuLabel>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel className='font-normal'>
+              <div className='flex flex-col space-y-1'>
+                <p className='text-sm leading-none font-medium'>{user.fullName}</p>
+                <p className='text-muted-foreground text-xs leading-none'>
+                  {user.emailAddresses[0].emailAddress}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>

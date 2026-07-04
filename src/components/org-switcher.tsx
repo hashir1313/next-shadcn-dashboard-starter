@@ -9,6 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
@@ -178,9 +179,11 @@ export function OrgSwitcher() {
             side={isMobile ? 'bottom' : 'right'}
             sideOffset={4}
           >
-            <DropdownMenuLabel className='text-muted-foreground text-xs'>
-              Organizations
-            </DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className='text-muted-foreground text-xs'>
+                Organizations
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
             {userMemberships.data.map((membership, index) => {
               const isActive = membership.organization.id === orgId;
               return (

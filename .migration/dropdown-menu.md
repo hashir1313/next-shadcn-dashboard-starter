@@ -3,6 +3,16 @@
 2026-07-04, transformation engine (legacy style `new-york`; stock wrapper). Radix
 DropdownMenu → Base UI **Menu** (canonical menu mapping). Typecheck clean.
 
+FIX 2026-07-04 (runtime issue found in dev): "Base UI: MenuGroupContext is
+missing" — `DropdownMenuLabel` maps to `Menu.GroupLabel`, which THROWS outside a
+`Menu.Group` (radix Label floated freely; the menus reference documents this and
+the base registry wrapper is intentionally identical, expecting grouped usage).
+Fixed at all six floating call sites by wrapping the label in
+`<DropdownMenuGroup>`: `user-nav.tsx`, `app-sidebar.tsx`, `org-switcher.tsx`
+(+Group import), `nav-user.tsx`, products/users `cell-action.tsx` (+Group
+imports). Same latent constraint applies to the unused ContextMenuLabel/
+MenubarLabel wrappers — future call sites must group them too.
+
 ## Changed
 
 - `src/components/ui/dropdown-menu.tsx` — import → `@base-ui/react/menu`.
