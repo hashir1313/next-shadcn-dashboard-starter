@@ -1,7 +1,6 @@
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { SignUp as ClerkSignUpForm } from '@clerk/nextjs';
-import { GitHubLogoIcon } from '@radix-ui/react-icons';
 import { Icons } from '@/components/icons';
 import { Metadata } from 'next';
 import Link from 'next/link';
@@ -66,7 +65,7 @@ export default function SignUpViewPage({ stars }: { stars: number }) {
             href={'https://github.com/kiranism/next-shadcn-dashboard-starter'}
           >
             <div className='flex items-center'>
-              <GitHubLogoIcon className='size-4' />
+              <Icons.github className='size-4' />
               <span className='ml-1 inline'>Star on GitHub</span>{' '}
             </div>
             <div className='ml-2 flex items-center gap-1 text-sm md:flex'>

@@ -15,7 +15,6 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import * as React from 'react';
-import { CheckIcon, CaretSortIcon } from '@radix-ui/react-icons';
 
 interface DataTableViewOptionsProps<TData> {
   table: Table<TData>;
@@ -44,7 +43,7 @@ export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps
       >
         <Icons.adjustments />
         View
-        <CaretSortIcon className='ml-auto opacity-50' />
+        <Icons.chevronsUpDown className='ml-auto opacity-50' />
       </PopoverTrigger>
       <PopoverContent align='end' className='w-44 p-0'>
         <Command>
@@ -58,7 +57,7 @@ export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps
                   onSelect={() => column.toggleVisibility(!column.getIsVisible())}
                 >
                   <span className='truncate'>{column.columnDef.meta?.label ?? column.id}</span>
-                  <CheckIcon
+                  <Icons.check
                     className={cn(
                       'ml-auto size-4 shrink-0',
                       column.getIsVisible() ? 'opacity-100' : 'opacity-0'

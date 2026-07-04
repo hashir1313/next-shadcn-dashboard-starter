@@ -19,7 +19,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import * as React from 'react';
-import { CheckIcon } from '@radix-ui/react-icons';
 
 interface DataTableFacetedFilterProps<TData, TValue> {
   column?: Column<TData, TValue>;
@@ -132,7 +131,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                         isSelected ? 'bg-primary' : 'opacity-50 [&_svg]:invisible'
                       )}
                     >
-                      <CheckIcon />
+                      <Icons.check />
                     </div>
                     {option.icon && <option.icon />}
                     <span className='truncate'>{option.label}</span>

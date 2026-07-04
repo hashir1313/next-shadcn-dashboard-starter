@@ -11,7 +11,6 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { ChevronDownIcon, ChevronUpIcon, CaretSortIcon, Cross2Icon } from '@radix-ui/react-icons';
 
 interface DataTableColumnHeaderProps<TData, TValue> extends React.ComponentProps<
   typeof DropdownMenuTrigger
@@ -42,11 +41,11 @@ export function DataTableColumnHeader<TData, TValue>({
         {title}
         {column.getCanSort() &&
           (column.getIsSorted() === 'desc' ? (
-            <ChevronDownIcon />
+            <Icons.chevronDown />
           ) : column.getIsSorted() === 'asc' ? (
-            <ChevronUpIcon />
+            <Icons.chevronUp />
           ) : (
-            <CaretSortIcon />
+            <Icons.chevronsUpDown />
           ))}
       </DropdownMenuTrigger>
       <DropdownMenuContent align='start' className='w-28'>
@@ -57,7 +56,7 @@ export function DataTableColumnHeader<TData, TValue>({
               checked={column.getIsSorted() === 'asc'}
               onClick={() => column.toggleSorting(false)}
             >
-              <ChevronUpIcon />
+              <Icons.chevronUp />
               Asc
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
@@ -65,7 +64,7 @@ export function DataTableColumnHeader<TData, TValue>({
               checked={column.getIsSorted() === 'desc'}
               onClick={() => column.toggleSorting(true)}
             >
-              <ChevronDownIcon />
+              <Icons.chevronDown />
               Desc
             </DropdownMenuCheckboxItem>
             {column.getIsSorted() && (
@@ -73,7 +72,7 @@ export function DataTableColumnHeader<TData, TValue>({
                 className='[&_svg]:text-muted-foreground pl-2'
                 onClick={() => column.clearSorting()}
               >
-                <Cross2Icon />
+                <Icons.close />
                 Reset
               </DropdownMenuItem>
             )}
