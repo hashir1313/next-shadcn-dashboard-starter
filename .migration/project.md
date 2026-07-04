@@ -10,9 +10,11 @@ the user's classes stayed theirs, with base registry anatomy where structural).
 - Added: `@base-ui/react@1.6.0`.
 - Removed (after the last component): all 27 `@radix-ui/react-*` primitive
   packages + the unified `radix-ui` package (`bun remove`, lockfile updated).
-- KEPT: `@radix-ui/react-icons` — it is the project's icon library
-  (`iconLibrary: "radix"` in components.json), used by calendar, the data-table
-  files, and the sign-up view. Not a primitive; not a migration target.
+- Removed (follow-up, user request): `@radix-ui/react-icons` — seven files
+  (calendar, five data-table files, sign-up view) switched to the tabler-based
+  `@/components/icons` map (`CaretSort` → `Icons.chevronsUpDown`, `Cross2` →
+  `Icons.close`, etc.); `iconLibrary` in components.json set to `"tabler"`.
+  ZERO `@radix-ui` imports remain anywhere in the repo.
 
 ## Migrated (28 wrappers, one report each in .migration/)
 
