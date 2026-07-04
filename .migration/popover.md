@@ -4,6 +4,16 @@
 Portal > Positioner > Popup; Anchor became an inert passthrough (FLAGGED). Typecheck
 clean.
 
+FIX 2026-07-04 (hydration issue found in dev): "button cannot be a descendant of
+button" — the clear-✕ affordance nested a `<button>` inside the PopoverTrigger's
+Button in `data-table-faceted-filter.tsx`, `data-table-date-filter.tsx`, and
+`data-table-slider-filter.tsx`. This nesting predates the migration (identical DOM
+under radix) but React/Next 16 surfaces it as a hydration error. Fixed per the
+upstream diceui shape: `<div role='button' tabIndex={0}>` with Enter/Space
+keydown support; `onReset` signatures widened to `MouseEvent | KeyboardEvent`
+and the slider filter's div-only stopPropagation guard made unconditional (so
+clearing never toggles the popover).
+
 ## Changed
 
 - `src/components/ui/popover.tsx` — import → `@base-ui/react/popover`. Content:

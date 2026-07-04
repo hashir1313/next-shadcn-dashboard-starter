@@ -63,7 +63,7 @@ export function DataTableFacetedFilter<TData, TValue>({
   );
 
   const onReset = React.useCallback(
-    (event?: React.MouseEvent) => {
+    (event?: React.MouseEvent | React.KeyboardEvent) => {
       event?.stopPropagation();
       column?.setFilterValue(undefined);
     },
@@ -74,14 +74,21 @@ export function DataTableFacetedFilter<TData, TValue>({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger render={<Button variant='outline' size='sm' className='border-dashed' />}>
         {selectedValues?.size > 0 ? (
-          <button
-            type='button'
+          <div
+            role='button'
             aria-label={`Clear ${title} filter`}
+            tabIndex={0}
             onClick={onReset}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                onReset(event);
+              }
+            }}
             className='focus-visible:ring-ring rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:outline-none'
           >
             <Icons.xCircle />
-          </button>
+          </div>
         ) : (
           <Icons.plusCircle />
         )}
