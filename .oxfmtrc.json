@@ -17,14 +17,10 @@
     "node_modules/**",
     "scripts/**",
     "pnpm-lock.yaml",
-    "CHANGELOG.md"
-  ],
-  "overrides": [
-    {
-      "files": ["*.md", "*.mdc"],
-      "options": {
-        "proseWrap": "preserve"
-      }
-    }
+    "**/*.md",
+    "**/*.mdc",
+    "**/*.mdx",
+    "**/*.yml",
+    "**/*.yaml"
   ]
 }
