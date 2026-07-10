@@ -207,6 +207,12 @@ export default function MyForm() {
 }
 ```
 
+> **Submit buttons must be explicit.** The `Button` component (Base UI) renders
+> `type="button"` when `type` is omitted — unlike a plain `<button>`, a bare
+> `<Button>Save</Button>` inside a `<form>` will NOT submit it (and Enter-key
+> implicit submission won't work either). Always use `form.SubmitButton` or pass
+> `type='submit'` explicitly.
+
 ---
 
 ## Usage Patterns

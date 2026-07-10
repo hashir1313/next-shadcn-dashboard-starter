@@ -4,6 +4,12 @@
 an `isLoading` spinner branch — customization preserved). Migrated to the REAL
 `@base-ui/react/button` primitive per the hard rule. Typecheck clean.
 
+FIX 2026-07-11 (code review, docs-only): Base UI's useButton injects
+type='button' when type is omitted, so a bare <Button> inside a <form> no longer
+submits (old plain <button> defaulted to submit). No live call site relies on
+implicit submit; documented in docs/forms.md (use form.SubmitButton or
+type='submit').
+
 ## Changed
 
 - `src/components/ui/button.tsx` — `@radix-ui/react-slot` import and the
