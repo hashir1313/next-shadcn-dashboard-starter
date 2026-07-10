@@ -745,6 +745,7 @@ export default function DemoForm() {
                         <div className='flex items-center gap-3'>
                           <input
                             id={field.name}
+                            aria-label='Favorite color'
                             type='color'
                             value={field.state.value}
                             onChange={(e) => field.handleChange(e.target.value)}
