@@ -4,6 +4,13 @@
 wrapper, ZERO app consumers). The most restructured primitive: the in-Root Viewport
 becomes Portal > Positioner > Popup > Viewport. Typecheck clean.
 
+FIX 2026-07-11 (code review): deleted NavigationMenuIndicator entirely. It had
+been remapped onto NavigationMenuPrimitive.Icon, which THROWS outside a
+NavigationMenu.Item - crashing the documented shadcn placement (direct child of
+List) - and its data-[state=visible/hidden] classes referenced attributes Base UI
+never emits. Zero usages existed; Base UI has no trigger-tracking indicator
+equivalent (matches the SKILL hard rule: no equivalent).
+
 ## Changed
 
 - `src/components/ui/navigation-menu.tsx` — import → `@base-ui/react/navigation-menu`.
