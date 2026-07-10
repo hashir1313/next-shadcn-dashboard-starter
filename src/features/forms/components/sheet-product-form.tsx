@@ -31,6 +31,13 @@ const productSchema = z.object({
   description: z.string().min(10, 'Description must be at least 10 characters')
 });
 
+const categoryOptions = [
+  { value: 'beauty', label: 'Beauty Products' },
+  { value: 'electronics', label: 'Electronics' },
+  { value: 'home', label: 'Home & Garden' },
+  { value: 'sports', label: 'Sports & Outdoors' }
+];
+
 export default function SheetProductForm() {
   const [open, setOpen] = useState(false);
 
@@ -100,6 +107,7 @@ export default function SheetProductForm() {
                       <field.Field>
                         <field.FieldLabel htmlFor={field.name}>Category *</field.FieldLabel>
                         <Select
+                          items={categoryOptions}
                           name={field.name}
                           value={field.state.value}
                           onValueChange={(value) => field.handleChange(value ?? '')}
@@ -108,10 +116,11 @@ export default function SheetProductForm() {
                             <SelectValue placeholder='Select category' />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value='beauty'>Beauty Products</SelectItem>
-                            <SelectItem value='electronics'>Electronics</SelectItem>
-                            <SelectItem value='home'>Home & Garden</SelectItem>
-                            <SelectItem value='sports'>Sports & Outdoors</SelectItem>
+                            {categoryOptions.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </field.Field>

@@ -4,6 +4,12 @@
 restructured mapping: Content split into Portal > Positioner > Popup, Viewport → List,
 ScrollButtons → ScrollArrows, `position` → `alignItemWithTrigger`. Typecheck clean.
 
+FIX 2026-07-11 (code review): Base UI Select.Value resolves labels ONLY from the
+Root `items` prop (never from mounted SelectItems), so triggers showed raw value
+slugs. Added `items` at the three call sites with label!=value (theme-selector,
+select-field, sheet-product-form) and null-guarded select-field's onValueChange
+(`v ?? ''`) like the other two sites.
+
 ## Changed
 
 - `src/components/ui/select.tsx` — import → `@base-ui/react/select`.

@@ -25,6 +25,7 @@ export function ThemeSelector() {
         Theme
       </Label>
       <Select
+        items={THEMES.map((theme) => ({ value: theme.value, label: theme.name }))}
         value={activeTheme}
         onValueChange={(value) => {
           if (value !== null) setActiveTheme(value);

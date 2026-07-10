@@ -47,8 +47,9 @@ export function SelectField({
           {required && ' *'}
         </FieldLabel>
         <Select
+          items={options}
           value={value}
-          onValueChange={field.handleChange}
+          onValueChange={(v) => field.handleChange(v ?? '')}
           onOpenChange={(open) => {
             if (!open) field.handleBlur();
           }}
