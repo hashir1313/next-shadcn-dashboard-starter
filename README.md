@@ -1,6 +1,6 @@
 <h1 align="center">Admin Dashboard Template with Next.js &amp; Shadcn UI</h1>
 
-<div align="center">Open source admin dashboard starter built with Next.js 16, shadcn/ui, Tailwind CSS, and TypeScript</div>
+<div align="center">Open source admin dashboard starter built with Next.js 16, shadcn/ui on Base UI, Tailwind CSS, and TypeScript</div>
 
 <br />
 
@@ -22,7 +22,7 @@
 
 ## Overview
 
-An open source admin dashboard starter built with Next.js 16, shadcn/ui, TypeScript, and Tailwind CSS.
+An open source admin dashboard starter built with Next.js 16, shadcn/ui on Base UI primitives, TypeScript, and Tailwind CSS.
 
 It ships with authentication, charts, tables, forms, and a feature-based folder structure, so you can skip the boilerplate and start building. It works well as a base for SaaS apps, internal tools, and admin panels.
 
@@ -33,7 +33,7 @@ It ships with authentication, charts, tables, forms, and a feature-based folder 
 - Auth - [Clerk](https://go.clerk.com/ILdYhn7)
 - Error tracking - [Sentry](https://sentry.io/for/nextjs/?utm_source=github&utm_medium=paid-community&utm_campaign=general-fy26q2-nextjs&utm_content=github-banner-project-tryfree)
 - Styling - [Tailwind CSS v4](https://tailwindcss.com)
-- Components - [shadcn/ui](https://ui.shadcn.com)
+- Components - [shadcn/ui](https://ui.shadcn.com) on [Base UI](https://base-ui.com) primitives
 - Charts - [Recharts](https://recharts.org) • [Evil Charts](https://evilcharts.com/)
 - Schema validation - [Zod](https://zod.dev)
 - Data fetching - [TanStack React Query](https://tanstack.com/query)
@@ -58,7 +58,7 @@ _Looking for a TanStack Start version? Here's the [repo](https://git.new/tanstac
 - Billing and subscriptions via Clerk Billing for B2B, with plan management and feature gating
 - Client-side RBAC navigation that filters menu items by organization, permissions, and roles
 - Infobar component for tips, status messages, or contextual notes on any page
-- shadcn/ui components styled with Tailwind CSS
+- shadcn/ui components on Base UI primitives, styled with Tailwind CSS
 - Six-plus themes with a theme switcher
 - Feature-based folder structure
 - A starting point for SaaS dashboards, internal tools, and client admin panels
