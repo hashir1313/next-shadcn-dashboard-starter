@@ -28,10 +28,8 @@ export function TaskColumn({ value, tasks, ...props }: TaskColumnProps) {
             {tasks.length}
           </Badge>
         </div>
-        <KanbanColumnHandle asChild>
-          <Button variant='ghost' size='icon'>
-            <Icons.gripVertical className='h-4 w-4' />
-          </Button>
+        <KanbanColumnHandle render={<Button variant='ghost' size='icon' />}>
+          <Icons.gripVertical className='h-4 w-4' />
         </KanbanColumnHandle>
       </div>
       <div className='flex flex-col gap-2 p-0.5'>

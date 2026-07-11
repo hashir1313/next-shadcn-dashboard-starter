@@ -11,7 +11,6 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { ChevronDownIcon, ChevronUpIcon, CaretSortIcon, Cross2Icon } from '@radix-ui/react-icons';
 
 interface DataTableColumnHeaderProps<TData, TValue> extends React.ComponentProps<
   typeof DropdownMenuTrigger
@@ -34,7 +33,7 @@ export function DataTableColumnHeader<TData, TValue>({
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          'hover:bg-accent focus:ring-ring data-[state=open]:bg-accent [&_svg]:text-muted-foreground -ml-1.5 flex h-8 items-center gap-1.5 rounded-md px-2 py-1.5 focus:ring-1 focus:outline-none [&_svg]:size-4 [&_svg]:shrink-0',
+          'hover:bg-accent focus:ring-ring data-popup-open:bg-accent [&_svg]:text-muted-foreground -ml-1.5 flex h-8 items-center gap-1.5 rounded-md px-2 py-1.5 focus:ring-1 focus:outline-none [&_svg]:size-4 [&_svg]:shrink-0',
           className
         )}
         {...props}
@@ -42,30 +41,32 @@ export function DataTableColumnHeader<TData, TValue>({
         {title}
         {column.getCanSort() &&
           (column.getIsSorted() === 'desc' ? (
-            <ChevronDownIcon />
+            <Icons.chevronDown />
           ) : column.getIsSorted() === 'asc' ? (
-            <ChevronUpIcon />
+            <Icons.chevronUp />
           ) : (
-            <CaretSortIcon />
+            <Icons.chevronsUpDown />
           ))}
       </DropdownMenuTrigger>
       <DropdownMenuContent align='start' className='w-28'>
         {column.getCanSort() && (
           <>
             <DropdownMenuCheckboxItem
+              closeOnClick
               className='[&_svg]:text-muted-foreground relative pr-8 pl-2 [&>span:first-child]:right-2 [&>span:first-child]:left-auto'
               checked={column.getIsSorted() === 'asc'}
               onClick={() => column.toggleSorting(false)}
             >
-              <ChevronUpIcon />
+              <Icons.chevronUp />
               Asc
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
+              closeOnClick
               className='[&_svg]:text-muted-foreground relative pr-8 pl-2 [&>span:first-child]:right-2 [&>span:first-child]:left-auto'
               checked={column.getIsSorted() === 'desc'}
               onClick={() => column.toggleSorting(true)}
             >
-              <ChevronDownIcon />
+              <Icons.chevronDown />
               Desc
             </DropdownMenuCheckboxItem>
             {column.getIsSorted() && (
@@ -73,7 +74,7 @@ export function DataTableColumnHeader<TData, TValue>({
                 className='[&_svg]:text-muted-foreground pl-2'
                 onClick={() => column.clearSorting()}
               >
-                <Cross2Icon />
+                <Icons.close />
                 Reset
               </DropdownMenuItem>
             )}
@@ -81,6 +82,7 @@ export function DataTableColumnHeader<TData, TValue>({
         )}
         {column.getCanHide() && (
           <DropdownMenuCheckboxItem
+            closeOnClick
             className='[&_svg]:text-muted-foreground relative pr-8 pl-2 [&>span:first-child]:right-2 [&>span:first-child]:left-auto'
             checked={!column.getIsVisible()}
             onClick={() => column.toggleVisibility(false)}

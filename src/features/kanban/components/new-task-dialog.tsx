@@ -8,6 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogClose,
   DialogTrigger
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -30,10 +31,8 @@ export default function NewTaskDialog() {
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <Button variant='secondary' size='sm'>
-          + Add New Task
-        </Button>
+      <DialogTrigger render={<Button variant='secondary' size='sm' />}>
+        + Add New Task
       </DialogTrigger>
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
@@ -54,11 +53,9 @@ export default function NewTaskDialog() {
           </div>
         </form>
         <DialogFooter>
-          <DialogTrigger asChild>
-            <Button type='submit' size='sm' form='task-form'>
-              Add Task
-            </Button>
-          </DialogTrigger>
+          <DialogClose render={<Button type='submit' size='sm' form='task-form' />}>
+            Add Task
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>

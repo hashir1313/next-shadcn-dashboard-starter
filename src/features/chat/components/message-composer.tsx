@@ -82,6 +82,7 @@ export function MessageComposer({
         <div className='flex shrink-0 flex-col items-end gap-1.5 sm:w-24 sm:gap-2'>
           <input
             ref={fileInputRef}
+            aria-label='Add attachments'
             type='file'
             multiple
             className='hidden'

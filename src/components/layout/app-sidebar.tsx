@@ -63,44 +63,46 @@ export default function AppSidebar() {
                 return item?.items && item?.items?.length > 0 ? (
                   <Collapsible
                     key={item.title}
-                    asChild
                     defaultOpen={item.isActive}
-                    className='group/collapsible'
+                    render={<SidebarMenuItem />}
                   >
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton tooltip={item.title} isActive={pathname === item.url}>
-                          {item.icon && <Icon />}
-                          <span>{item.title}</span>
-                          <Icons.chevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items?.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
-                                <Link href={subItem.url}>
-                                  <span>{subItem.title}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
+                    <CollapsibleTrigger
+                      render={
+                        <SidebarMenuButton
+                          tooltip={item.title}
+                          isActive={pathname === item.url}
+                          className='group/collapsible'
+                        />
+                      }
+                    >
+                      {item.icon && <Icon />}
+                      <span>{item.title}</span>
+                      <Icons.chevronRight className='ml-auto transition-transform duration-200 group-data-panel-open/collapsible:rotate-90' />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {item.items?.map((subItem) => (
+                          <SidebarMenuSubItem key={subItem.title}>
+                            <SidebarMenuSubButton
+                              render={<Link href={subItem.url} aria-label={subItem.title} />}
+                              isActive={pathname === subItem.url}
+                            >
+                              <span>{subItem.title}</span>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
                   </Collapsible>
                 ) : (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      asChild
+                      render={<Link href={item.url} aria-label={item.title} />}
                       tooltip={item.title}
                       isActive={pathname === item.url}
                     >
-                      <Link href={item.url}>
-                        <Icon />
-                        <span>{item.title}</span>
-                      </Link>
+                      <Icon />
+                      <span>{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -113,30 +115,32 @@ export default function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size='lg'
-                  className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
-                >
-                  {user && (
-                    <UserAvatarProfile className='h-8 w-8 rounded-lg' showInfo user={user} />
-                  )}
-                  <Icons.chevronsDown className='ml-auto size-4' />
-                </SidebarMenuButton>
+              <DropdownMenuTrigger
+                render={
+                  <SidebarMenuButton
+                    size='lg'
+                    className='data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground'
+                  />
+                }
+              >
+                {user && <UserAvatarProfile className='h-8 w-8 rounded-lg' showInfo user={user} />}
+                <Icons.chevronsDown className='ml-auto size-4' />
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
+                className='w-(--anchor-width) min-w-56 rounded-lg'
                 side='bottom'
                 align='end'
                 sideOffset={4}
               >
-                <DropdownMenuLabel className='p-0 font-normal'>
-                  <div className='px-1 py-1.5'>
-                    {user && (
-                      <UserAvatarProfile className='h-8 w-8 rounded-lg' showInfo user={user} />
-                    )}
-                  </div>
-                </DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className='p-0 font-normal'>
+                    <div className='px-1 py-1.5'>
+                      {user && (
+                        <UserAvatarProfile className='h-8 w-8 rounded-lg' showInfo user={user} />
+                      )}
+                    </div>
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
 
                 <DropdownMenuGroup>
