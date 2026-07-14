@@ -1,329 +1,110 @@
 # Traqqy — Product Brief
 
-## Overview
+## Elevator Pitch
 
-**Traqqy** is a project management tool for freelancers with a public client-facing progress page. Freelancers manage projects and tasks privately (list + kanban views), and share a public URL (`username/project-slug`) with clients to show progress without requiring client accounts.
+**Traqqy** is a client progress-sharing tool built for freelancers. It turns project management into a transparent, shareable experience — freelancers manage their projects and tasks internally, while clients see real-time progress on a public page. No client sign-up required.
 
-**Deployment:** Vercel (Next.js 16 App Router, standalone output)
+## Core Value Proposition
 
----
+Freelancers struggle with one recurring question from clients: *"How's the project going?"* Traqqy eliminates that friction by giving clients a live, branded progress page they can visit anytime. The freelancer gets a clean project management tool; the client gets transparency.
 
-## Core Features
+## Target Audience
 
-### 1. Projects & Tasks (Freelancer Private View)
+- **Primary**: Solo freelancers (designers, developers, writers, consultants, marketers)
+- **Secondary**: Small freelance agencies (2-5 people) who want a simple client portal
+- **Admin**: The platform owner (you) manages users, plans, and system settings
 
-**Project**
-- Name (required)
-- Slug (auto-generated from name, customizable, unique per freelancer)
-- Description (optional)
-- Freelancer owner (Clerk user)
+## Key Differentiators
 
-**Task**
-- Title
-- Description (optional)
-- Status: `pending` | `in_progress` | `completed`
-- Project association
-- Order/position (for kanban columns)
+| Traqqy | Other PM Tools |
+|---|---|
+| Public progress page for clients — no account needed | Clients need to sign up and learn a new tool |
+| Freelancer-first design — simple, focused | Enterprise-focused, overloaded with features |
+| Branded public pages (paid feature) | White-labeling is expensive or unavailable |
+| Built for sharing progress, not managing teams | Built for internal team collaboration |
+| Lightweight — tasks, progress, share | Heavy — sprints, epics, dependencies, Gantt charts |
 
-**Progress Calculation**
-- Only `completed` tasks count toward progress %
-- Formula: `completed_tasks / total_tasks * 100`
+## High-Level Feature Overview
 
-**Views**
-- **List View** — Table with filters, pagination, sorting (TanStack Table + TanStack Query)
-- **Kanban View** — Three columns: Pending, In Progress, Completed (dnd-kit)
+### Freelancer Dashboard (Free)
+- Account creation via Clerk (email, Google)
+- Project CRUD (name, slug, description, tasks)
+- Task management with 3 states: Pending → In Progress → Completed
+- Progress calculation: `(Completed / Total) × 100`
+- Dual task views: List view + Kanban view (switchable like Notion)
+- Public URL with copy button
+- Dashboard theme selection (10 themes, cookie-based)
 
-### 2. Public Client Page (`/[username]/[project-slug]`)
+### Settings (Free)
+- Account management (name, email, password)
+- Dashboard theme + dark/light mode
 
-**No authentication required** — fully public.
+### Settings (Paid — Pro Plan)
+- **Branding settings**: Logo upload, colors, border radius, fonts for public page
+- **Public email**: Override account email for client-facing display
 
-**Content:**
-- Project name & description
-- Freelancer info: logo, name, email
-- Progress bar + percentage
-- All tasks grouped by status (Pending, In Progress, Completed)
+### Public Client Page (Free to view, branded if Freelancer is Pro)
+- Route: `/{username}/{project-slug}`
+- Shows: project name, description, freelancer name/logo (paid), progress bar, percentage, task list
+- No authentication required
+- Public page theme stored in DB (paid feature controls customization)
 
-**Theming (Pro only):**
-- One theme per freelancer (applies to all their projects)
-- Customizable:
-  - Logo upload
-  - Primary color (OKLCH/hex)
-  - Border radius (0–1, maps to CSS `--radius`)
-  - Sans-serif font (Google Fonts)
-  - Monospace font (Google Fonts)
-  - Light/Dark mode
-- Stored in Clerk `publicMetadata.branding` + synced to DB
-- Applied via inline CSS variables on public page wrapper
+### Admin Panel (`/admin`)
+- User management: view profile, change plan, delete, suspend, impersonate
+- Announcements: create and broadcast
+- Feedback: collected from users via floating button + milestone triggers
+- Feature flags: toggle file uploads, account creation, feedback widget ON/OFF
+- Beta flags: toggle new features in production (kill switch for broken features)
+- Analytics: PostHog integration
 
-### 3. Freelancer Settings (`/dashboard/settings`)
+### Billing
+- Plans managed via Paddle (subscription management + payment processing)
+- Paddle webhooks update user plan in the application database
+- Free tier: core project management + 3 projects
+- Pro tier: branding, custom themes, unlimited projects, logo upload
 
-| Tab | Features | Plan Gate |
-|-----|----------|-----------|
-| **Public Page** | Logo, name, Email, colors, radius, fonts, mode | Pro only |
-| **Customization** | Dashboard theme picker (10 presets), dark/light mode | Free |
-| **Account** | Name, Username, email, plan info, delete account | Free |
+### Feedback System
+- **Always-on**: Floating feedback button (subtle, non-intrusive)
+- **Milestone-triggered**: Small non-blocking toasts after key actions (first project created, first 100% project, first public link shared)
+- Controlled by feature flag — OFF means zero feedback UI anywhere
 
-**Dashboard Themes** (separate from public themes):
-- 10 presets (Vercel, Claude, Supabase, etc.)
-- Stored in `localStorage`
-- Applied via `data-theme` on `<html>`
-- Free for all users
+## Two Theme Systems
 
-### 4. Admin Panel (`/admin`)
+1. **Dashboard Theme** (Freelancer's own UI): Selected from header dropdown, uses existing 10-theme system (cookie-based). Free.
+2. **Public Page Theme** (Client-facing branding): Configured in Settings (branding tab). Stored in database. Includes colors, fonts, border radius. Paid feature.
 
-**Access:** Role-based (`role: 'admin'` in Clerk)
+## Business Model
 
-**Features:**
-- **User Management** — View profile (avatar, name, email, logo), change plan, suspend, delete, impersonate
-- **Announcements** — Create/edit/dismiss global announcements
-- **Feedback** — View feedback submitted via in-app widget
-- **Feature Flags** — Toggle: file uploads, signups, feedback widget
-- **Analytics** — PostHog dashboard embed
+- **Free tier**: Core task management, dashboard theming, unlimited public page views, 3 projects
+- **Pro tier** ($X/month): Unlimited projects, branded public pages, custom themes, logo upload, priority support
 
-### 5. Billing & Subscriptions (Paddle)
+## Success Metrics
 
-**Why Paddle:** Merchant of Record, supports Pakistan payouts to local bank accounts.
+- Freelancer sign-ups
+- Projects created per user
+- Public page views (client engagement)
+- Free → Pro conversion rate
+- Feedback response rate
 
-**Plans:**
-- **Free** — Core features (projects, tasks, kanban, list view, public page with default theme)
-- **Pro** — Custom branding on public page, custom themes, logo, fonts, colors, radius
+## Tech Stack
 
-**Integration:**
-- Plans/prices managed in **Paddle Dashboard**
-- Price IDs stored in `src/config/plans.ts`
-- Checkout via Paddle.js overlay
-- Webhook: `src/app/api/paddle/webhook/route.ts` → updates Clerk `publicMetadata`
-- Customer portal for subscription management
-- Feature gating via Clerk `has({ feature: 'branding' })`
-
----
-
-## Technical Architecture
-
-### Stack
-- **Framework:** Next.js 16 (App Router)
-- **Auth:** Clerk (Organizations for workspaces, Users for freelancers)
-- **Database:** PostgreSQL (Prisma ORM) — *confirmed*
-- **Payments:** Paddle
-- **Analytics:** PostHog
-- **Error Tracking:** Sentry
-- **UI:** shadcn/ui (New York), Tailwind CSS v4
-- **State:** TanStack Query, Zustand, nuqs
-- **Forms:** TanStack Form + Zod
-
-### Feature Structure (New)
-
-```
-src/
-├── features/
-│   ├── projects/                    # NEW: Projects + Tasks
-│   │   ├── api/
-│   │   │   ├── types.ts
-│   │   │   ├── service.ts
-│   │   │   └── queries.ts
-│   │   ├── components/
-│   │   │   ├── project-listing.tsx
-│   │   │   ├── project-kanban.tsx
-│   │   │   ├── project-form.tsx
-│   │   │   ├── task-form.tsx
-│   │   │   └── columns.tsx
-│   │   ├── schemas/
-│   │   └── constants/
-│   ├── users/                       # EXTEND: Add branding, settings
-│   ├── billing/                     # NEW: Paddle integration
-│   │   ├── api/
-│   │   ├── components/
-│   │   └── hooks/
-│   └── admin/                       # NEW: Admin panel
-│       ├── api/
-│       ├── components/
-│       └── app/
-├── app/
-│   ├── dashboard/
-│   │   ├── projects/                # NEW: Project list + create
-│   │   │   ├── page.tsx
-│   │   │   ├── [projectId]/
-│   │   │   │   ├── page.tsx         # List view
-│   │   │   │   └── kanban/page.tsx  # Kanban view
-│   │   └── settings/
-│   │       ├── branding/page.tsx    # NEW: Branding editor (pro)
-│   │       ├── customization/page.tsx
-│   │       └── account/page.tsx
-│   ├── [username]/
-│   │   └── [slug]/
-│   │       └── page.tsx             # NEW: Public project page
-│   ├── admin/                       # NEW: Admin panel
-│   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   ├── users/page.tsx
-│   │   ├── announcements/page.tsx
-│   │   ├── feedback/page.tsx
-│   │   ├── feature-flags/page.tsx
-│   │   └── analytics/page.tsx
-│   └── api/
-│       └── paddle/
-│           ├── checkout/route.ts
-│           ├── portal/route.ts
-│           └── webhook/route.ts
-├── config/
-│   └── plans.ts                     # NEW: Plan definitions + Paddle price IDs
-├── lib/
-│   ├── subscription.ts              # NEW: useSubscription(), feature checks
-│   └── paddle.ts                    # NEW: Paddle.js init
-├── styles/
-│   └── public-theme.css             # NEW: Base CSS vars for public themes
-└── components/
-    ├── billing/                     # NEW: UpgradeButton, BillingPortalButton
-    └── themes/
-        └── ProFeatureGate.tsx       # NEW: Wrapper for pro features
-```
-
----
-
-## Data Models
-
-### Project
-```ts
-interface Project {
-  id: string;
-  freelancerId: string;        // Clerk user ID
-  name: string;
-  slug: string;                // Unique per freelancer
-  description?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-```
-
-### Task
-```ts
-interface Task {
-  id: string;
-  projectId: string;
-  title: string;
-  description?: string;
-  status: 'pending' | 'in_progress' | 'completed';
-  position: number;            // For ordering within column
-  createdAt: Date;
-  updatedAt: Date;
-}
-```
-
-### Freelancer Branding (Clerk publicMetadata)
-```ts
-interface Branding {
-  logoUrl?: string;
-  primaryColor: string;        // OKLCH or hex
-  borderRadius: number;        // 0–1
-  fontSans: string;            // Google Font name
-  fontMono: string;            // Google Font name
-  mode: 'light' | 'dark';
-}
-
-interface PublicMetadata {
-  plan: 'free' | 'pro';
-  features: string[];          // ['branding', 'custom_theme']
-  branding?: Branding;
-}
-```
-
-### Paddle Plans Config
-```ts
-// src/config/plans.ts
-export const plans = {
-  free: {
-    name: 'Free',
-    priceId: null,
-    features: ['projects', 'tasks', 'kanban', 'public_page'],
-  },
-  pro: {
-    name: 'Pro',
-    monthlyPriceId: 'pri_xxx',     // Paddle price ID
-    yearlyPriceId: 'pri_yyy',
-    features: ['projects', 'tasks', 'kanban', 'public_page', 'branding', 'custom_theme'],
-  },
-};
-```
-
----
-
-## Feature Flags
-
-| Flag | Default | Description |
-|------|---------|-------------|
-| `file_uploads` | `true` | Enable file attachments on tasks |
-| `signups` | `true` | Allow new freelancer registrations |
-| `feedback_widget` | `true` | Show feedback modal after key actions |
-| `announcements` | `true` | Show global announcements banner |
-
-Stored in DB, managed in admin panel, checked via `featureFlags` utility.
-
----
-
-## Navigation (RBAC)
-
-**Freelancer Dashboard:**
-- Overview
-- Projects (list + kanban)
-- Settings (Branding*, Customization, Account)
-- Notifications
-- Profile
-
-**Admin Only:**
-- Admin Panel (Users, Announcements, Feedback, Feature Flags, Analytics)
-
-*Branding requires Pro plan — hidden via `access: { feature: 'branding' }` in nav config.
-
----
-
-## Public Page Theming Implementation
-
-**CSS Variables** (`src/styles/public-theme.css`):
-```css
-[data-theme='custom'] {
-  --radius: 0.5rem;
-  --primary: oklch(0 0 0);
-  --font-sans: Geist, sans-serif;
-  --font-mono: Geist Mono, monospace;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0 0 0);
-  /* ... other vars with defaults */
-}
-
-[data-theme='custom'].dark {
-  --background: oklch(0 0 0);
-  --foreground: oklch(1 0 0);
-  /* ... dark defaults */
-}
-```
-
-**Applied in Public Page:**
-```tsx
-<div data-theme="custom" style={themeStyle}>
-  <PublicProjectPage />
-</div>
-```
-
----
-
-## Implementation Priority
-
-1. **Projects + Tasks** (adapt products + kanban)
-2. **Public Page** (`/[username]/[slug]`) with default theme
-3. **Paddle Integration** (webhooks, checkout, subscription sync)
-4. **Branding Settings** (Pro gate, logo/color/radius/font editors)
-5. **Public Page Custom Theming** (dynamic CSS vars from branding)
-6. **Admin Panel** (users, feature flags, announcements)
-7. **Feedback Widget** + **PostHog Analytics**
-8. **Feature Flags System**
-
----
-
-## Open Decisions
-
-- [x] **Database:** Prisma + PostgreSQL
-- [x] **Project slug uniqueness:** Per-freelancer
-- [x] **Task positions:** Fractional indexing
-- [x] **File uploads:** Local storage (feature flagged, persistent volume in prod)
-- [ ] **Impersonation:** Deferred — implement at 100+ paying users
-- [x] **Announcements:** Custom table + MDX
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript (strict) |
+| Database | PostgreSQL on Neon (serverless) via Drizzle ORM |
+| Styling | Tailwind CSS v4 |
+| UI Components | shadcn/ui + Base UI |
+| Auth | Clerk |
+| Data Fetching | TanStack React Query |
+| Forms | TanStack Form + Zod |
+| Tables | TanStack Table |
+| Icons | @tabler/icons-react (via centralized registry) |
+| Charts | Recharts |
+| Analytics | PostHog |
+| Error Tracking | Sentry |
+| ORM | Drizzle (type-safe, works great with Neon serverless) |
+| Package Manager | Bun (preferred) / npm |
+| Containerization | Docker (Node.js & Bun) |
+| File Storage | Vercel Blob (250MB free on Hobby, pay-as-you-go on Pro) |
+| Hosting | Vercel (Hobby: free, Pro: $20/mo with $100 in usage credits) |

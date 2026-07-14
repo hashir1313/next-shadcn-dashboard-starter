@@ -1,0 +1,29 @@
+{
+  "mcp": {
+    "neon": {
+      "type": "remote",
+      "url": "https://mcp.neon.tech/mcp",
+      "enabled": true
+    },
+    "next-devtools": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "next-devtools-mcp@latest"
+      ],
+      "enabled": true,
+      "environment": {}
+    },
+    "drizzle": {
+      "type": "local",
+      "command": [
+        "npx",
+        "github:defrex/drizzle-mcp",
+        "./drizzle.config.ts"
+      ],
+      "enabled": true,
+      "environment": {}
+    }
+  }
+}
