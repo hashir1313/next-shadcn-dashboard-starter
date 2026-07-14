@@ -1,27 +1,23 @@
 {
+  "$schema": "https://opencode.ai/config.json",
   "mcp": {
     "neon": {
       "type": "remote",
       "url": "https://mcp.neon.tech/mcp",
-      "enabled": true
+      "enabled": true,
+      "headers": {
+        "Authorization": "Bearer napi_no21pohg7nwchn40gz6s00gjgxmz5r83vxxogif7wr65d2f5q94tdnvjuzn0t0ys"
+      }
     },
     "next-devtools": {
       "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "next-devtools-mcp@latest"
-      ],
+      "command": ["npx", "-y", "next-devtools-mcp@latest"],
       "enabled": true,
       "environment": {}
     },
     "drizzle": {
       "type": "local",
-      "command": [
-        "npx",
-        "github:defrex/drizzle-mcp",
-        "./drizzle.config.ts"
-      ],
+      "command": ["npx", "github:defrex/drizzle-mcp", "./drizzle.config.ts"],
       "enabled": true,
       "environment": {}
     }
