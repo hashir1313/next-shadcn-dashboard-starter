@@ -1,7 +1,8 @@
 import { db } from '@/lib/db';
-import { projects, tasks, users } from '@/lib/db/schema';
+import { projects, tasks } from '@/lib/db/schema';
 import { eq, and, desc, asc, ilike, count, sql } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
+import { ensureUser } from '@/lib/db/users';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -54,6 +55,9 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
+
+  // Ensure user exists in DB (Clerk users aren't auto-synced)
+  await ensureUser({ id: userId });
 
   const finalSlug =
     slug ||
