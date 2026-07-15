@@ -231,13 +231,13 @@ export default function TaskListView({ projectId, tasks }: TaskListViewProps) {
                       render={
                         <Button
                           size='sm'
-                          variant='outline'
+                          variant='ghost'
                           onClick={() => setDeletingId(task.id)}
-                          className='h-8 w-8 p-0 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive'
+                          className='h-8 w-8 p-0 text-destructive hover:text-destructive'
                         />
                       }
                     >
-                      <Icons.trash className='h-3 w-3' />
+                      <Icons.trash className='h-3 w-3 text-destructive' />
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>

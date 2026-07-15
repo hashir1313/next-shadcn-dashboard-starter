@@ -58,16 +58,14 @@ export default function ProjectViewPage({ projectId }: ProjectViewPageProps) {
 
             {/* Progress */}
             <div className='space-y-2'>
-              <div className='flex items-center justify-between'>
-                <span className='text-sm text-muted-foreground'>Progress</span>
-                <span className='text-sm font-medium'>
-                  {project.completedTasks}/{project.totalTasks} tasks completed
-                </span>
+              <div className='flex items-center justify-between text-sm'>
+                <span className='text-muted-foreground'>Progress</span>
+                <span className='font-medium'>{project.progress}%</span>
               </div>
-              <div className='flex items-center gap-3'>
-                <Progress value={project.progress} className='h-2 flex-1 [&>div]:bg-green-600' />
-                <span className='text-sm font-semibold tabular-nums'>{project.progress}%</span>
-              </div>
+              <Progress value={project.progress} className='h-2' />
+              <p className='text-xs text-muted-foreground'>
+                {project.completedTasks}/{project.totalTasks} tasks completed
+              </p>
             </div>
 
             {/* Public URL */}
