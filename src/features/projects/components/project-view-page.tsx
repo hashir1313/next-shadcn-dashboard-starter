@@ -21,6 +21,7 @@ type ProjectViewPageProps = {
 export default function ProjectViewPage({ projectId }: ProjectViewPageProps) {
   const { userId } = useAuth();
   const [view, setView] = useState<'list' | 'kanban'>('list');
+  const [copied, setCopied] = useState(false);
 
   const { data: projectData } = useSuspenseQuery(projectByIdOptions(projectId));
   const { data: tasksData } = useSuspenseQuery(tasksQueryOptions(projectId));
@@ -38,6 +39,8 @@ export default function ProjectViewPage({ projectId }: ProjectViewPageProps) {
     const fullUrl = `${window.location.origin}${publicUrl}`;
     navigator.clipboard.writeText(fullUrl);
     toast.success('Public URL copied to clipboard');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -69,8 +72,12 @@ export default function ProjectViewPage({ projectId }: ProjectViewPageProps) {
                 </span>
               </div>
               <Button size='sm' variant='outline' onClick={handleCopyUrl}>
-                <Icons.check className='mr-1 h-3 w-3' />
-                Copy
+                {copied ? (
+                  <Icons.check className='mr-1 h-3 w-3 text-green-600' />
+                ) : (
+                  <Icons.clipboard className='mr-1 h-3 w-3' />
+                )}
+                {copied ? 'Copied' : 'Copy'}
               </Button>
               <a href={publicUrl} target='_blank' rel='noopener noreferrer'>
                 <Button size='sm' variant='ghost'>

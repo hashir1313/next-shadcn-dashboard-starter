@@ -10,13 +10,6 @@ type ProgressBarProps = {
   className?: string;
 };
 
-function getProgressColor(progress: number): string {
-  if (progress === 100) return '[&>div]:bg-green-600';
-  if (progress >= 50) return '[&>div]:bg-blue-600';
-  if (progress > 0) return '[&>div]:bg-yellow-600';
-  return '';
-}
-
 export default function ProgressBar({
   progress,
   totalTasks,
@@ -32,7 +25,7 @@ export default function ProgressBar({
         </span>
       </div>
       <div className='flex items-center gap-3'>
-        <Progress value={progress} className={cn('h-2 flex-1', getProgressColor(progress))} />
+        <Progress value={progress} className='h-2 flex-1 [&>div]:bg-green-600' />
         <span className='text-sm font-semibold tabular-nums'>{progress}%</span>
       </div>
     </div>

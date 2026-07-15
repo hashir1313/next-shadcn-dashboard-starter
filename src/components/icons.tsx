@@ -23,6 +23,8 @@ import {
   IconCircleCheck,
   IconCirclePlus,
   IconCircleX,
+  IconClipboard,
+  IconClipboardCheck,
   IconClipboardText,
   IconClock,
   IconCode,
@@ -168,6 +170,8 @@ export const Icons = {
   login: IconLogin,
   logout: IconLogout,
   gripVertical: IconGripVertical,
+  clipboard: IconClipboard,
+  clipboardCheck: IconClipboardCheck,
 
   // Shapes / Indicators
   circle: IconCircle,

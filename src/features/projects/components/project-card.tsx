@@ -11,11 +11,32 @@ type ProjectCardProps = {
   project: Project;
 };
 
-function getProgressColor(progress: number): string {
-  if (progress === 100) return 'text-green-600';
-  if (progress >= 50) return 'text-blue-600';
-  if (progress > 0) return 'text-yellow-600';
-  return 'text-muted-foreground';
+function getStatusBadge(progress: number) {
+  if (progress === 100) {
+    return (
+      <Badge variant='default' className='bg-green-600 hover:bg-green-600'>
+        Done
+      </Badge>
+    );
+  }
+  if (progress > 0) {
+    return (
+      <Badge
+        variant='secondary'
+        className='bg-blue-100 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400'
+      >
+        In Progress
+      </Badge>
+    );
+  }
+  return (
+    <Badge
+      variant='secondary'
+      className='bg-zinc-200 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300'
+    >
+      Not Started
+    </Badge>
+  );
 }
 
 export default function ProjectCard({ project }: ProjectCardProps) {
@@ -25,15 +46,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         <CardHeader className='pb-3'>
           <div className='flex items-start justify-between'>
             <CardTitle className='line-clamp-1 text-lg'>{project.name}</CardTitle>
-            {project.progress === 100 ? (
-              <Badge variant='default' className='bg-green-600 hover:bg-green-600'>
-                Done
-              </Badge>
-            ) : project.progress > 0 ? (
-              <Badge variant='secondary'>In Progress</Badge>
-            ) : (
-              <Badge variant='outline'>Not Started</Badge>
-            )}
+            {getStatusBadge(project.progress)}
           </div>
         </CardHeader>
         <CardContent className='flex flex-1 flex-col space-y-3'>
@@ -44,9 +57,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           <div className='space-y-2'>
             <div className='flex items-center justify-between text-sm'>
               <span className='text-muted-foreground'>Progress</span>
-              <span className={`font-medium ${getProgressColor(project.progress)}`}>
-                {project.progress}%
-              </span>
+              <span className='font-medium'>{project.progress}%</span>
             </div>
             <Progress value={project.progress} className='h-2' />
             <p className='text-xs text-muted-foreground'>
