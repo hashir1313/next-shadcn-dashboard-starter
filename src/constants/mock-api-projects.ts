@@ -1,5 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Mock Projects Data Store — In-memory fake data for development
+// Automatically generates mock projects for any userId on first access
 //////////////////////////////////////////////////////////////////////////////////
 
 import { faker } from '@faker-js/faker';
@@ -28,7 +29,7 @@ export type ProjectFilters = {
   sort?: string;
 };
 
-export type ProjectMutationPayload = {
+export type ProjectCreatePayload = {
   name: string;
   slug?: string;
   description?: string;
@@ -43,13 +44,16 @@ function slugify(text: string): string {
     .trim();
 }
 
-function generateRandomProject(userId: string, id: number): Project {
+let idCounter = 100;
+
+function generateRandomProject(userId: string): Project {
   const name = faker.commerce.productName();
   const totalTasks = faker.number.int({ min: 3, max: 15 });
   const completedTasks = faker.number.int({ min: 0, max: totalTasks });
+  idCounter++;
 
   return {
-    id: `proj_${id}`,
+    id: `proj_${idCounter}`,
     userId,
     name,
     slug: slugify(name),
@@ -62,21 +66,32 @@ function generateRandomProject(userId: string, id: number): Project {
   };
 }
 
+function generateProjectsForUser(userId: string): Project[] {
+  const count = faker.number.int({ min: 4, max: 8 });
+  const projects: Project[] = [];
+  for (let i = 0; i < count; i++) {
+    projects.push(generateRandomProject(userId));
+  }
+  return projects;
+}
+
 export const fakeProjects = {
   records: [] as Project[],
+  seededUsers: new Set<string>(),
 
-  initialize() {
-    const sampleProjects: Project[] = [];
-    // Generate projects for a demo user
-    for (let i = 1; i <= 8; i++) {
-      sampleProjects.push(generateRandomProject('user_demo', i));
+  ensureSeeded(userId: string) {
+    if (!this.seededUsers.has(userId)) {
+      this.seededUsers.add(userId);
+      const projects = generateProjectsForUser(userId);
+      this.records.push(...projects);
     }
-    this.records = sampleProjects;
   },
 
   async getProjects(filters: ProjectFilters) {
     await delay(500);
     const { userId, page = 1, limit = 10, search } = filters;
+
+    this.ensureSeeded(userId);
 
     let projects = this.records.filter((p) => p.userId === userId);
 
@@ -112,6 +127,7 @@ export const fakeProjects = {
 
   async getProjectBySlug(userId: string, slug: string) {
     await delay(300);
+    this.ensureSeeded(userId);
     const project = this.records.find((p) => p.userId === userId && p.slug === slug);
     if (!project) {
       return { success: false, data: null, message: 'Project not found' };
@@ -121,7 +137,6 @@ export const fakeProjects = {
 
   async getPublicProject(username: string, slug: string) {
     await delay(300);
-    // In mock mode, we search across all users
     const project = this.records.find((p) => p.slug === slug);
     if (!project) {
       return { success: false, data: null, message: 'Project not found' };
@@ -129,19 +144,19 @@ export const fakeProjects = {
     return { success: true, data: project, message: 'Project found' };
   },
 
-  async createProject(userId: string, data: ProjectMutationPayload) {
+  async createProject(userId: string, data: ProjectCreatePayload) {
     await delay(500);
-    const id = `proj_${this.records.length + 1}`;
-    const slug = data.slug || slugify(data.name);
+    this.ensureSeeded(userId);
 
-    // Check slug uniqueness per user
+    const slug = data.slug || slugify(data.name);
     const existing = this.records.find((p) => p.userId === userId && p.slug === slug);
     if (existing) {
       return { success: false, data: null, message: 'A project with this slug already exists' };
     }
 
+    idCounter++;
     const newProject: Project = {
-      id,
+      id: `proj_${idCounter}`,
       userId,
       name: data.name,
       slug,
@@ -157,7 +172,7 @@ export const fakeProjects = {
     return { success: true, data: newProject, message: 'Project created successfully' };
   },
 
-  async updateProject(id: string, data: Partial<ProjectMutationPayload>) {
+  async updateProject(id: string, data: Partial<ProjectCreatePayload>) {
     await delay(500);
     const index = this.records.findIndex((p) => p.id === id);
     if (index === -1) {
@@ -178,6 +193,17 @@ export const fakeProjects = {
     return { success: true, data: this.records[index], message: 'Project updated successfully' };
   },
 
+  async updateProjectCounts(id: string, totalTasks: number, completedTasks: number) {
+    const index = this.records.findIndex((p) => p.id === id);
+    if (index !== -1) {
+      this.records[index].totalTasks = totalTasks;
+      this.records[index].completedTasks = completedTasks;
+      this.records[index].progress =
+        totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+      this.records[index].updatedAt = new Date().toISOString();
+    }
+  },
+
   async deleteProject(id: string) {
     await delay(500);
     const index = this.records.findIndex((p) => p.id === id);
@@ -186,21 +212,5 @@ export const fakeProjects = {
     }
     this.records.splice(index, 1);
     return { success: true, message: 'Project deleted successfully' };
-  },
-
-  async updateProjectProgress(id: string) {
-    // This is called after task changes to recalculate progress
-    const project = this.records.find((p) => p.id === id);
-    if (project) {
-      const totalTasks = project.totalTasks;
-      if (totalTasks > 0) {
-        project.progress = Math.round((project.completedTasks / totalTasks) * 100);
-      } else {
-        project.progress = 0;
-      }
-      project.updatedAt = new Date().toISOString();
-    }
   }
 };
-
-fakeProjects.initialize();

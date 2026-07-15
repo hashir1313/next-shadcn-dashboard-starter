@@ -46,6 +46,14 @@ export const navGroups: NavGroup[] = [
         items: []
       },
       {
+        title: 'Projects',
+        url: '/dashboard/projects',
+        icon: 'post',
+        isActive: false,
+        shortcut: ['p', 'p'],
+        items: []
+      },
+      {
         title: 'Workspaces',
         url: '/dashboard/workspaces',
         icon: 'workspace',
@@ -61,35 +69,27 @@ export const navGroups: NavGroup[] = [
         access: { requireOrg: true }
       },
       {
-        title: 'Product',
+        title: 'Product (Demo)',
         url: '/dashboard/product',
         icon: 'product',
-        shortcut: ['p', 'p'],
-        isActive: false,
         items: []
       },
       {
-        title: 'Users',
+        title: 'Users (Demo)',
         url: '/dashboard/users',
         icon: 'teams',
-        shortcut: ['u', 'u'],
-        isActive: false,
         items: []
       },
       {
-        title: 'Kanban',
+        title: 'Kanban (Demo)',
         url: '/dashboard/kanban',
         icon: 'kanban',
-        shortcut: ['k', 'k'],
-        isActive: false,
         items: []
       },
       {
-        title: 'Chat',
+        title: 'Chat (Demo)',
         url: '/dashboard/chat',
         icon: 'chat',
-        shortcut: ['c', 'c'],
-        isActive: false,
         items: []
       }
     ]

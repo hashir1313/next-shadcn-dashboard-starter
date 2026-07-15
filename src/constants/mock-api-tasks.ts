@@ -1,5 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Mock Tasks Data Store — In-memory fake data for development
+// Auto-generates tasks for any projectId on first access
 //////////////////////////////////////////////////////////////////////////////////
 
 import { faker } from '@faker-js/faker';
@@ -23,10 +24,13 @@ export type TaskMutationPayload = {
   status?: TaskStatus;
 };
 
+let taskIdCounter = 1000;
+
 function generateRandomTask(projectId: string, position: number): Task {
   const statuses: TaskStatus[] = ['pending', 'in_progress', 'completed'];
+  taskIdCounter++;
   return {
-    id: `task_${faker.string.uuid().slice(0, 8)}`,
+    id: `task_${taskIdCounter}`,
     projectId,
     title: faker.hacker.phrase(),
     description: faker.lorem.sentence(),
@@ -39,23 +43,13 @@ function generateRandomTask(projectId: string, position: number): Task {
 
 export const fakeTasks = {
   records: [] as Task[],
+  seededProjects: new Set<string>(),
 
-  initialize() {
-    // Generate tasks for each demo project
-    const projects = [
-      'proj_1',
-      'proj_2',
-      'proj_3',
-      'proj_4',
-      'proj_5',
-      'proj_6',
-      'proj_7',
-      'proj_8'
-    ];
-
-    for (const projectId of projects) {
-      const taskCount = faker.number.int({ min: 3, max: 8 });
-      for (let i = 0; i < taskCount; i++) {
+  ensureSeeded(projectId: string) {
+    if (!this.seededProjects.has(projectId)) {
+      this.seededProjects.add(projectId);
+      const count = faker.number.int({ min: 4, max: 8 });
+      for (let i = 0; i < count; i++) {
         this.records.push(generateRandomTask(projectId, i));
       }
     }
@@ -63,10 +57,10 @@ export const fakeTasks = {
 
   async getTasks(projectId: string) {
     await delay(300);
-    const tasks = this.records
+    this.ensureSeeded(projectId);
+    return this.records
       .filter((t) => t.projectId === projectId)
       .sort((a, b) => a.position - b.position);
-    return tasks;
   },
 
   async getTaskById(id: string) {
@@ -76,13 +70,16 @@ export const fakeTasks = {
 
   async createTask(projectId: string, data: TaskMutationPayload) {
     await delay(400);
+    this.ensureSeeded(projectId);
+
     const maxPosition = Math.max(
       0,
       ...this.records.filter((t) => t.projectId === projectId).map((t) => t.position)
     );
 
+    taskIdCounter++;
     const newTask: Task = {
-      id: `task_${faker.string.uuid().slice(0, 8)}`,
+      id: `task_${taskIdCounter}`,
       projectId,
       title: data.title,
       description: data.description || '',
@@ -153,5 +150,3 @@ export const fakeTasks = {
       .sort((a, b) => a.position - b.position);
   }
 };
-
-fakeTasks.initialize();
