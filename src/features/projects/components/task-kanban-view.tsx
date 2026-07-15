@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import {
   DndContext,
@@ -130,9 +130,10 @@ function KanbanColumn({ column, tasks: columnTasks }: { column: KanbanColumn; ta
 export default function TaskKanbanView({ projectId, tasks }: TaskKanbanViewProps) {
   const [localTasks, setLocalTasks] = useState<Task[]>(tasks);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const pendingRef = useRef(false);
 
-  // Sync when parent tasks change
-  if (tasks !== localTasks && tasks.length > 0) {
+  // Only sync from parent when no optimistic updates are pending
+  if (!pendingRef.current && tasks !== localTasks && tasks.length > 0) {
     setLocalTasks(tasks);
   }
 
@@ -144,19 +145,29 @@ export default function TaskKanbanView({ projectId, tasks }: TaskKanbanViewProps
   const statusMutation = useMutation({
     ...updateTaskStatusMutation,
     onSuccess: () => {
+      pendingRef.current = false;
       getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(projectId) });
       getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
     },
-    onError: () => toast.error('Failed to move task')
+    onError: () => {
+      pendingRef.current = false;
+      setLocalTasks(tasks);
+      toast.error('Failed to move task');
+    }
   });
 
   const reorderMutation = useMutation({
     ...reorderTasksMutation,
     onSuccess: () => {
+      pendingRef.current = false;
       getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(projectId) });
       getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
     },
-    onError: () => toast.error('Failed to reorder tasks')
+    onError: () => {
+      pendingRef.current = false;
+      setLocalTasks(tasks);
+      toast.error('Failed to reorder tasks');
+    }
   });
 
   function handleDragStart(event: DragStartEvent) {
@@ -214,6 +225,7 @@ export default function TaskKanbanView({ projectId, tasks }: TaskKanbanViewProps
     const column = columns.find((c) => c.id === overId);
     if (column) {
       if (activeTask.status !== column.id) {
+        pendingRef.current = true;
         statusMutation.mutate({ id: activeId, status: column.id });
       }
       return;
@@ -235,11 +247,13 @@ export default function TaskKanbanView({ projectId, tasks }: TaskKanbanViewProps
         setLocalTasks([...otherTasks, ...reordered]);
 
         const taskIds = [...otherTasks.map((t) => t.id), ...reordered.map((t) => t.id)];
+        pendingRef.current = true;
         reorderMutation.mutate({ projectId, taskIds });
       }
     } else {
       // Different column — move task
       if (activeTask.status !== overTask.status) {
+        pendingRef.current = true;
         statusMutation.mutate({ id: activeId, status: overTask.status });
       }
     }
