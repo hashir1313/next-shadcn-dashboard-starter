@@ -8,6 +8,8 @@ import {
   updateTaskStatusMutation,
   deleteTaskMutation
 } from '../api/mutations';
+import { projectKeys } from '../api/queries';
+import { getQueryClient } from '@/lib/query-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -52,6 +54,8 @@ export default function TaskListView({ projectId, tasks }: TaskListViewProps) {
   const createMutation = useMutation({
     ...createTaskMutation,
     onSuccess: () => {
+      getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(projectId) });
+      getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
       toast.success('Task added');
       setNewTaskTitle('');
     },
@@ -61,6 +65,8 @@ export default function TaskListView({ projectId, tasks }: TaskListViewProps) {
   const updateMutation = useMutation({
     ...updateTaskMutation,
     onSuccess: () => {
+      getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(projectId) });
+      getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
       toast.success('Task updated');
       setEditingId(null);
     },
@@ -69,12 +75,18 @@ export default function TaskListView({ projectId, tasks }: TaskListViewProps) {
 
   const statusMutation = useMutation({
     ...updateTaskStatusMutation,
+    onSuccess: () => {
+      getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(projectId) });
+      getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
+    },
     onError: () => toast.error('Failed to update status')
   });
 
   const deleteMutation = useMutation({
     ...deleteTaskMutation,
     onSuccess: () => {
+      getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(projectId) });
+      getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
       toast.success('Task deleted');
       setDeletingId(null);
     },

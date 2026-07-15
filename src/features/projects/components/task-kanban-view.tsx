@@ -14,6 +14,8 @@ import {
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { updateTaskStatusMutation } from '../api/mutations';
+import { projectKeys } from '../api/queries';
+import { getQueryClient } from '@/lib/query-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Icons } from '@/components/icons';
@@ -71,6 +73,10 @@ export default function TaskKanbanView({ projectId, tasks }: TaskKanbanViewProps
 
   const statusMutation = useMutation({
     ...updateTaskStatusMutation,
+    onSuccess: () => {
+      getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(projectId) });
+      getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
+    },
     onError: () => toast.error('Failed to move task')
   });
 
