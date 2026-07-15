@@ -5,7 +5,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { projectByIdOptions, tasksQueryOptions } from '../api/queries';
 import { useAuth } from '@clerk/nextjs';
 import { notFound } from 'next/navigation';
-import ProgressBar from './progress-bar';
+import { Progress } from '@/components/ui/progress';
 import ViewSwitcher from './view-switcher';
 import TaskListView from './task-list-view';
 import TaskKanbanView from './task-kanban-view';
@@ -56,11 +56,19 @@ export default function ProjectViewPage({ projectId }: ProjectViewPageProps) {
               )}
             </div>
 
-            <ProgressBar
-              progress={project.progress}
-              totalTasks={project.totalTasks}
-              completedTasks={project.completedTasks}
-            />
+            {/* Progress */}
+            <div className='space-y-2'>
+              <div className='flex items-center justify-between'>
+                <span className='text-sm text-muted-foreground'>Progress</span>
+                <span className='text-sm font-medium'>
+                  {project.completedTasks}/{project.totalTasks} tasks completed
+                </span>
+              </div>
+              <div className='flex items-center gap-3'>
+                <Progress value={project.progress} className='h-2 flex-1 [&>div]:bg-green-600' />
+                <span className='text-sm font-semibold tabular-nums'>{project.progress}%</span>
+              </div>
+            </div>
 
             {/* Public URL */}
             <div className='flex items-center gap-2'>
