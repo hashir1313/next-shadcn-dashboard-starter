@@ -1,7 +1,17 @@
 # Phase 1 Audit — Projects & Tasks
 
 **Date**: 2026-07-15
-**Status**: Implementation complete, pending review
+**Status**: Implementation complete, committed (`c36fe28`)
+
+---
+
+## Architecture
+
+- **BFF pattern**: Client components → `service.ts` (fetch via `apiClient`) → API route handlers → Drizzle ORM → Neon Postgres
+- **Real DB connected**: Schema pushed via `bun run db:push`; mock stores removed (only type re-exports remain)
+- **`apiClient`**: Uses absolute URLs (`http://localhost:3000`) on server for SSR prefetch, relative URLs on client
+- **`ensureUser()`**: Auto-creates DB user row on first project creation (Clerk FK constraint)
+- **Cache invalidation**: Component `onSuccess`/`onError`/`onSettled` handlers call `invalidateQueries` (overrides `mutationOptions.onSuccess`)
 
 ---
 
@@ -10,8 +20,8 @@
 ### 1.1 Create `features/projects/` module
 | Item | Status | Notes |
 |------|--------|-------|
-| `api/types.ts` | ✅ Done | Project, Task, TaskStatus, response types, mutation payloads |
-| `api/service.ts` | ✅ Done | Data access layer wrapping mock stores, progress recalculation |
+| `api/types.ts` | ✅ Done | Project, Task, TaskStatus, response types, `ProjectCreatePayload` |
+| `api/service.ts` | ✅ Done | BFF pattern — calls `/api/*` via `apiClient` |
 | `api/queries.ts` | ✅ Done | React Query key factories + queryOptions |
 | `api/mutations.ts` | ✅ Done | All CRUD mutations for projects and tasks |
 | `schemas/project.ts` | ✅ Done | Zod schemas for project and task forms |
@@ -23,8 +33,8 @@
 | `Project` type matches DB schema | ✅ Done | id, userId, name, slug, description, totalTasks, completedTasks, progress |
 | `Task` type matches DB schema | ✅ Done | id, projectId, title, description, status, position |
 | `TaskStatus` enum | ✅ Done | `'pending' | 'in_progress' | 'completed'` |
-| Service layer pattern | ✅ Done | Only service.ts needs swapping for real backend |
-| Query key factory | ✅ Done | `projectKeys.all`, `.list()`, `.detail()`, `.tasks()` |
+| Service layer pattern | ✅ Done | BFF — service.ts calls API routes, route handlers call Drizzle |
+| Query key factory | ✅ Done | `projectKeys.all`, `.list()`, `.detail()`, `.tasks()`, `.slug()`, `.public()` |
 | Mutation options | ✅ Done | Create/update/delete for both projects and tasks |
 
 ### 1.3 Build project creation page (`/dashboard/projects/new`)
@@ -34,7 +44,7 @@
 | Form: name (required) | ✅ Done | Min 2 chars |
 | Form: slug (auto-gen, editable) | ✅ Done | Auto-generated from name, regex-validated |
 | Form: description (optional) | ✅ Done | Textarea, max 500 chars |
-| Form: initial tasks | ❌ Not done | PRD says "optional initial tasks" at creation — not implemented |
+| Form: initial tasks | ✅ Done | Dynamic task list with add/remove at creation |
 | Redirect after create | ✅ Done | Redirects to `/dashboard/projects/[id]` |
 | Validation | ✅ Done | Zod schema, onBlur validators |
 | Cancel/back button | ✅ Done | Returns to previous page |
@@ -55,9 +65,9 @@
 |------|--------|-------|
 | Route exists | ✅ Done | `/dashboard/projects/[projectId]` |
 | Project header | ✅ Done | Name + description |
-| Progress bar | ✅ Done | Bar + "X/Y completed" + percentage |
+| Progress bar | ✅ Done | Derived from tasks query (single source of truth) |
 | Public URL displayed | ✅ Done | Shows full URL |
-| Copy button | ✅ Done | Copies to clipboard with toast |
+| Copy button | ✅ Done | Copies to clipboard with tick icon feedback |
 | "Open public page" link | ✅ Done | Preview button opens in new tab |
 | Server-side prefetch | ✅ Done | Prefetches project + tasks |
 
@@ -66,8 +76,9 @@
 |------|--------|-------|
 | Add task inline | ✅ Done | Input + Enter key or button |
 | Edit task inline | ✅ Done | Click edit icon, type, Enter to save |
-| Delete task | ✅ Done | Click trash icon, no confirmation dialog |
-| Status dropdown/cycle | ✅ Done | Click status button to cycle through states |
+| Delete task | ✅ Done | AlertDialog confirmation with task title |
+| Status dropdown | ✅ Done | DropdownMenu on status badge with all 3 options |
+| Optimistic updates | ✅ Done | Instant UI, 300ms debounced server mutation |
 | Empty state | ✅ Done | "No tasks yet" message |
 
 ### 1.7 Build Kanban view for tasks
@@ -76,9 +87,11 @@
 | Three columns | ✅ Done | Pending / In Progress / Completed |
 | Column headers | ✅ Done | Icon + title + count badge |
 | Task cards in columns | ✅ Done | Title + description preview |
-| Drag-and-drop between columns | ✅ Done | Uses @dnd-kit (already in deps) |
+| Drag-and-drop between columns | ✅ Done | Uses starter's `Kanban`/`KanbanBoard`/`KanbanColumn`/`KanbanItem` |
 | Empty column state | ✅ Done | "Drop tasks here" placeholder |
-| Status updates on drop | ✅ Done | Calls `updateTaskStatus` mutation |
+| Status updates on drop | ✅ Done | Before/after snapshot diffing fires `updateTaskStatus` mutation |
+| Progress updates on drop | ✅ Done | Derived from tasks query, updates automatically |
+| Drag overlay | ✅ Done | `KanbanOverlay` shows card preview while dragging |
 
 ### 1.8 Build View switcher (List ↔ Kanban)
 | Item | Status | Notes |
@@ -86,16 +99,16 @@
 | Toggle button pair | ✅ Done | List + Kanban buttons |
 | Visual active state | ✅ Done | Default variant for active, ghost for inactive |
 | State management | ✅ Done | Local state via useState |
-| Persisted in URL | ❌ Not done | Implementation plan says "URL search param or local state" — using local state |
 
 ### 1.9 Implement progress calculation and display
 | Item | Status | Notes |
 |------|--------|-------|
-| Formula: (completed / total) × 100 | ✅ Done | |
-| Progress bar component | ✅ Done | Colored by progress level |
+| Formula: (completed / total) × 100 | ✅ Done | Computed client-side from tasks query |
+| Progress bar component | ✅ Done | `Progress` from shadcn/ui |
 | "X/Y tasks completed" text | ✅ Done | |
-| Auto-recalculates on task change | ✅ Done | Service layer calls `recalculateProgress()` after every task mutation |
+| Auto-recalculates on task change | ✅ Done | Derived from tasks query — no optimistic writes, no desync |
 | 0 tasks = 0% | ✅ Done | |
+| Single source of truth | ✅ Done | Progress computed from `tasks.filter(t => t.status === 'completed').length / tasks.length` |
 
 ### 1.10 Add navigation items for projects
 | Item | Status | Notes |
@@ -127,17 +140,39 @@
 | Progress | 1/1 | 0 |
 | Navigation | 1/1 | 0 |
 | Public URL | 1/1 | 0 |
-| **Total** | **15/15** | **0 required** |
+| **Total** | **15/15** | **0** |
 
-### Nice-to-haves not implemented
-| Item | Priority | Notes |
-|------|----------|-------|
-| ~~Initial tasks at project creation~~ | ~~P0~~ | ✅ Implemented — dynamic task list with add/remove |
-| View persistence in URL | P1 | Using local state, could use `nuqs` for URL persistence |
-| ~~Task delete confirmation~~ | ~~P1~~ | ✅ Implemented — AlertDialog with task title |
-| Task reordering in list view | P2 | PRD lists this as P2, not required for MVP |
+### Nice-to-haves
+| Item | Status | Notes |
+|------|--------|-------|
+| Initial tasks at project creation | ✅ Done | Dynamic task list with add/remove |
+| Task delete confirmation | ✅ Done | AlertDialog with task title |
+| View persistence in URL | Not done | Using local state, could use `nuqs` for URL persistence |
+| Task reordering in list view | Not done | PRD lists this as P2, not required for MVP |
 
-### Files Created (21 total)
+### API Routes (BFF pattern)
+```
+src/app/api/
+├── projects/
+│   ├── route.ts              # GET (list) + POST (create)
+│   └── [id]/
+│       ├── route.ts          # GET (detail) + PUT (update) + DELETE
+│       └── tasks/
+│           ├── route.ts      # GET (list) + POST (create)
+│           └── reorder/
+│               └── route.ts  # POST (reorder)
+├── tasks/
+│   └── [id]/
+│       ├── route.ts          # PUT (update) + DELETE
+│       └── status/
+│           └── route.ts      # PATCH (status update + progress recalc)
+└── public/
+    └── [username]/
+        └── [slug]/
+            └── route.ts      # GET (public project + tasks)
+```
+
+### Files Created (27 total)
 ```
 src/features/projects/
 ├── api/
@@ -164,12 +199,38 @@ src/app/dashboard/projects/
 └── [projectId]/
     └── page.tsx
 
-src/constants/
-├── mock-api-projects.ts
-└── mock-api-tasks.ts
+src/app/api/projects/
+├── route.ts
+└── [id]/
+    ├── route.ts
+    └── tasks/
+        ├── route.ts
+        └── reorder/
+            └── route.ts
+
+src/app/api/tasks/
+└── [id]/
+    ├── route.ts
+    └── status/
+        └── route.ts
+
+src/app/api/public/
+└── [username]/
+    └── [slug]/
+        └── route.ts
+
+src/lib/
+├── db/
+│   ├── index.ts
+│   ├── schema.ts
+│   └── users.ts
+└── api-client.ts
 ```
 
 ### Verification
 - `tsc --noEmit` — ✅ passes
 - `bun run dev` — ✅ starts without errors
-- Mock data — ✅ auto-generates per userId
+- Real DB — ✅ Neon Postgres via Drizzle ORM
+- API routes — ✅ 6 route handlers (projects, tasks, status, reorder, public)
+- Optimistic updates — ✅ Instant UI for status changes (list + kanban)
+- Progress sync — ✅ Derived from tasks query, no desync possible
