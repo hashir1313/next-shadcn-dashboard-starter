@@ -7,7 +7,8 @@ import {
   createTask,
   updateTask,
   updateTaskStatus,
-  deleteTask
+  deleteTask,
+  reorderTasks
 } from './service';
 import { projectKeys } from './queries';
 import type { ProjectCreatePayload, TaskMutationPayload, Task } from './types';
@@ -64,6 +65,15 @@ export const updateTaskStatusMutation = mutationOptions({
 
 export const deleteTaskMutation = mutationOptions({
   mutationFn: ({ id, projectId }: { id: string; projectId: string }) => deleteTask(id),
+  onSuccess: (_data, variables) => {
+    getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(variables.projectId) });
+    getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
+  }
+});
+
+export const reorderTasksMutation = mutationOptions({
+  mutationFn: ({ projectId, taskIds }: { projectId: string; taskIds: string[] }) =>
+    reorderTasks(projectId, taskIds),
   onSuccess: (_data, variables) => {
     getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(variables.projectId) });
     getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
