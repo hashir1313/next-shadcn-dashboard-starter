@@ -1,7 +1,19 @@
-export type { Project, ProjectFilters } from '@/constants/mock-api-projects';
-export type { TaskStatus } from '@/constants/mock-api-projects';
+export type { ProjectFilters } from '@/constants/mock-api-projects';
 
-import type { Project, TaskStatus } from '@/constants/mock-api-projects';
+export type TaskStatus = 'pending' | 'in_progress' | 'completed';
+
+export type Project = {
+  id: string;
+  userId: string;
+  name: string;
+  slug: string;
+  description: string;
+  totalTasks: number;
+  completedTasks: number;
+  progress: number;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type ProjectsResponse = {
   success: boolean;
