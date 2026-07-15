@@ -33,6 +33,10 @@ export default function ProjectViewPage({ projectId }: ProjectViewPageProps) {
   const project = projectData.data;
   const tasks = tasksData || [];
 
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((t) => t.status === 'completed').length;
+  const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
   const publicUrl = userId ? `/${userId}/${project.slug}` : '';
 
   function handleCopyUrl() {
@@ -60,11 +64,11 @@ export default function ProjectViewPage({ projectId }: ProjectViewPageProps) {
             <div className='space-y-2'>
               <div className='flex items-center justify-between text-sm'>
                 <span className='text-muted-foreground'>Progress</span>
-                <span className='font-medium'>{project.progress}%</span>
+                <span className='font-medium'>{progress}%</span>
               </div>
-              <Progress value={project.progress} className='h-2' />
+              <Progress value={progress} className='h-2' />
               <p className='text-xs text-muted-foreground'>
-                {project.completedTasks}/{project.totalTasks} tasks completed
+                {completedTasks}/{totalTasks} tasks completed
               </p>
             </div>
 

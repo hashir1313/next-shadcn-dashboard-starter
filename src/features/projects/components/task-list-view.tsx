@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import {
   createTaskMutation,
@@ -14,6 +14,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Icons } from '@/components/icons';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,7 +49,7 @@ const statusConfig: Record<
   completed: { label: 'Completed', variant: 'default' }
 };
 
-const statusCycle: TaskStatus[] = ['pending', 'in_progress', 'completed'];
+const allStatuses: TaskStatus[] = ['pending', 'in_progress', 'completed'];
 
 export default function TaskListView({ projectId, tasks }: TaskListViewProps) {
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -73,13 +79,31 @@ export default function TaskListView({ projectId, tasks }: TaskListViewProps) {
     onError: () => toast.error('Failed to update task')
   });
 
+  const debounceRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const pendingRef = useRef<Map<string, Task[] | undefined>>(new Map());
+
   const statusMutation = useMutation({
     ...updateTaskStatusMutation,
-    onSuccess: () => {
-      getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(projectId) });
-      getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
+    onMutate: async (vars) => {
+      const original = pendingRef.current.get(vars.id);
+      return { previousTasks: original };
     },
-    onError: () => toast.error('Failed to update status')
+    onError: (_err, vars, context) => {
+      const ctx = context as { previousTasks?: Task[] } | undefined;
+      if (ctx?.previousTasks) {
+        getQueryClient().setQueryData(projectKeys.tasks(projectId), ctx.previousTasks);
+      }
+      debounceRef.current.delete(vars.id);
+      pendingRef.current.delete(vars.id);
+      toast.error('Failed to update status');
+    },
+    onSettled: (_data, _err, vars) => {
+      debounceRef.current.delete(vars.id);
+      pendingRef.current.delete(vars.id);
+      getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(projectId) });
+      getQueryClient().invalidateQueries({ queryKey: projectKeys.detail(projectId) });
+      getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
+    }
   });
 
   const deleteMutation = useMutation({
@@ -101,11 +125,34 @@ export default function TaskListView({ projectId, tasks }: TaskListViewProps) {
     });
   }
 
-  function handleStatusToggle(task: Task) {
-    const currentIndex = statusCycle.indexOf(task.status);
-    const nextStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
-    statusMutation.mutate({ id: task.id, status: nextStatus });
-  }
+  const handleStatusChange = useCallback(
+    (task: Task, newStatus: TaskStatus) => {
+      if (task.status === newStatus) return;
+
+      const existing = debounceRef.current.get(task.id);
+      if (existing) clearTimeout(existing);
+
+      if (!pendingRef.current.has(task.id)) {
+        const currentTasks = getQueryClient().getQueryData<Task[]>(projectKeys.tasks(projectId));
+        pendingRef.current.set(task.id, currentTasks);
+      }
+
+      const currentTasks = getQueryClient().getQueryData<Task[]>(projectKeys.tasks(projectId));
+      if (currentTasks) {
+        const newTasks = currentTasks.map((t) =>
+          t.id === task.id ? { ...t, status: newStatus } : t
+        );
+        getQueryClient().setQueryData<Task[]>(projectKeys.tasks(projectId), newTasks);
+      }
+
+      const timer = setTimeout(() => {
+        statusMutation.mutate({ id: task.id, status: newStatus });
+      }, 300);
+
+      debounceRef.current.set(task.id, timer);
+    },
+    [projectId, statusMutation]
+  );
 
   function handleStartEdit(task: Task) {
     setEditingId(task.id);
@@ -161,18 +208,6 @@ export default function TaskListView({ projectId, tasks }: TaskListViewProps) {
               key={task.id}
               className='group flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50'
             >
-              {/* Status toggle */}
-              <button
-                onClick={() => handleStatusToggle(task)}
-                className='flex h-5 w-5 shrink-0 items-center justify-center rounded border'
-                title={`Status: ${statusConfig[task.status].label}`}
-              >
-                {task.status === 'completed' && <Icons.check className='h-3 w-3 text-green-600' />}
-                {task.status === 'in_progress' && (
-                  <div className='h-2 w-2 rounded-full bg-blue-600' />
-                )}
-              </button>
-
               {/* Task title */}
               <div className='flex-1 min-w-0'>
                 {editingId === task.id ? (
@@ -205,10 +240,36 @@ export default function TaskListView({ projectId, tasks }: TaskListViewProps) {
                 )}
               </div>
 
-              {/* Status badge */}
-              <Badge variant={statusConfig[task.status].variant} className='shrink-0'>
-                {statusConfig[task.status].label}
-              </Badge>
+              {/* Status dropdown */}
+              {editingId !== task.id && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={<button className='cursor-pointer outline-none' />}>
+                    <Badge
+                      variant={statusConfig[task.status].variant}
+                      className='shrink-0 cursor-pointer transition-colors hover:opacity-80'
+                    >
+                      {statusConfig[task.status].label}
+                    </Badge>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align='end'>
+                    {allStatuses.map((status) => (
+                      <DropdownMenuItem
+                        key={status}
+                        onClick={() => handleStatusChange(task, status)}
+                        className='gap-2'
+                      >
+                        <Badge
+                          variant={statusConfig[status].variant}
+                          className='pointer-events-none text-xs'
+                        >
+                          {statusConfig[status].label}
+                        </Badge>
+                        {task.status === status && <Icons.check className='h-3 w-3 ml-auto' />}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
 
               {/* Actions */}
               {editingId !== task.id && (
