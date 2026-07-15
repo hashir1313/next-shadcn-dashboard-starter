@@ -38,7 +38,7 @@ export const deleteProjectMutation = mutationOptions({
 export const createTaskMutation = mutationOptions({
   mutationFn: ({ projectId, data }: { projectId: string; data: TaskMutationPayload }) =>
     createTask(projectId, data),
-  onSuccess: (_data: Task, variables) => {
+  onSuccess: (_data, variables) => {
     getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(variables.projectId) });
     getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
   }
@@ -47,7 +47,7 @@ export const createTaskMutation = mutationOptions({
 export const updateTaskMutation = mutationOptions({
   mutationFn: ({ id, data }: { id: string; data: Partial<TaskMutationPayload> }) =>
     updateTask(id, data),
-  onSuccess: (data: Task) => {
+  onSuccess: (data) => {
     getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(data.projectId) });
     getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
   }
@@ -56,7 +56,7 @@ export const updateTaskMutation = mutationOptions({
 export const updateTaskStatusMutation = mutationOptions({
   mutationFn: ({ id, status }: { id: string; status: Task['status'] }) =>
     updateTaskStatus(id, status),
-  onSuccess: (data: Task) => {
+  onSuccess: (data) => {
     getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(data.projectId) });
     getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
   }
@@ -64,7 +64,7 @@ export const updateTaskStatusMutation = mutationOptions({
 
 export const deleteTaskMutation = mutationOptions({
   mutationFn: ({ id, projectId }: { id: string; projectId: string }) => deleteTask(id),
-  onSuccess: (_data: void, variables) => {
+  onSuccess: (_data, variables) => {
     getQueryClient().invalidateQueries({ queryKey: projectKeys.tasks(variables.projectId) });
     getQueryClient().invalidateQueries({ queryKey: projectKeys.all });
   }
