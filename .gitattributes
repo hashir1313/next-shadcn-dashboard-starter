@@ -1,0 +1,6 @@
+* text=auto
+
+# Shell scripts should use LF
+*.sh text eol=lf
+
+# Keep CRLF for Windows-specific files (usually none needed)
