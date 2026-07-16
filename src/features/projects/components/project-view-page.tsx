@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
 import { toast } from 'sonner';
+import ProjectEditSheet from './project-edit-sheet';
+import ProjectDeleteDialog from './project-delete-dialog';
 
 type ProjectViewPageProps = {
   projectId: string;
@@ -22,6 +24,8 @@ export default function ProjectViewPage({ projectId }: ProjectViewPageProps) {
   const { userId } = useAuth();
   const [view, setView] = useState<'list' | 'kanban'>('list');
   const [copied, setCopied] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const { data: projectData } = useSuspenseQuery(projectByIdOptions(projectId));
   const { data: tasksData } = useSuspenseQuery(tasksQueryOptions(projectId));
@@ -53,11 +57,33 @@ export default function ProjectViewPage({ projectId }: ProjectViewPageProps) {
       <Card>
         <CardHeader>
           <div className='space-y-4'>
-            <div>
-              <h1 className='text-2xl font-bold'>{project.name}</h1>
-              {project.description && (
-                <p className='mt-1 text-muted-foreground'>{project.description}</p>
-              )}
+            <div className='flex items-start justify-between'>
+              <div>
+                <h1 className='text-2xl font-bold'>{project.name}</h1>
+                {project.description && (
+                  <p className='mt-1 text-muted-foreground'>{project.description}</p>
+                )}
+              </div>
+              <div className='flex items-center gap-1'>
+                <Button
+                  size='sm'
+                  variant='ghost'
+                  className='h-8 w-8 p-0 text-muted-foreground hover:text-foreground'
+                  onClick={() => setEditOpen(true)}
+                >
+                  <Icons.edit className='h-4 w-4' />
+                  <span className='sr-only'>Edit project</span>
+                </Button>
+                <Button
+                  size='sm'
+                  variant='ghost'
+                  className='h-8 w-8 p-0 text-muted-foreground hover:text-destructive'
+                  onClick={() => setDeleteOpen(true)}
+                >
+                  <Icons.trash className='h-4 w-4' />
+                  <span className='sr-only'>Delete project</span>
+                </Button>
+              </div>
             </div>
 
             {/* Progress */}
@@ -113,6 +139,9 @@ export default function ProjectViewPage({ projectId }: ProjectViewPageProps) {
           <TaskKanbanView projectId={projectId} tasks={tasks} />
         )}
       </div>
+
+      <ProjectEditSheet project={project} open={editOpen} onOpenChange={setEditOpen} />
+      <ProjectDeleteDialog project={project} open={deleteOpen} onOpenChange={setDeleteOpen} />
     </div>
   );
 }

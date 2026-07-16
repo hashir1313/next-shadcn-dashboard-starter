@@ -85,6 +85,39 @@ Build in layers, starting with a working end-to-end skeleton for the core flow, 
 
 ---
 
+## Phase 1b: Project Editing (Day 6)
+
+**Goal**: Freelancer can edit existing project details.
+
+### Tasks
+
+| # | Task | Priority |
+|---|---|---|
+| 1b.1 | Add edit button to project view header | P1 |
+| Pencil icon button next to project name, opens edit dialog/sheet | |
+| 1b.2 | Build project edit form (reuse `project-form.tsx`) | P1 |
+| Pre-filled with current name, slug, description; same validation as create | |
+| 1b.3 | Add PUT endpoint for project update | P0 |
+| `PUT /api/projects/[id]` — update name, slug, description (slug uniqueness per user) | |
+| 1b.4 | Wire up mutation + cache invalidation | P0 |
+| `updateProject` mutation in `mutations.ts`, invalidate `projectKeys.all` on success | |
+| 1b.5 | Add project delete with confirmation | P1 |
+| AlertDialog with project name confirmation, DELETE endpoint already exists | |
+
+### Deliverables
+- Edit project name, slug, description from project view page
+- Delete project with confirmation
+- Slug uniqueness enforced on edit
+
+### Verification
+- Click edit → form pre-filled with current values
+- Change name → reflects in project list and public URL
+- Change slug → public URL updates
+- Duplicate slug → validation error
+- Delete project → redirected to project list
+
+---
+
 ## Phase 2: Public Page (Day 7-9)
 
 **Goal**: Client can view project progress without signing up.
@@ -311,6 +344,7 @@ Build in layers, starting with a working end-to-end skeleton for the core flow, 
 |---|---|---|---|
 | 0: Setup | 2 | ⭐ | Clean project + patterns |
 | 1: Core Flow | 4 | ⭐⭐⭐⭐⭐ | Projects + tasks + progress |
+| 1b: Project Editing | 1 | ⭐⭐ | Edit + delete projects |
 | 2: Public Page | 3 | ⭐⭐⭐ | Client-facing progress page |
 | 3: Settings | 3 | ⭐⭐⭐ | Account + branding |
 | 4: Billing | 2 | ⭐⭐ | Plans + gating |
@@ -318,13 +352,14 @@ Build in layers, starting with a working end-to-end skeleton for the core flow, 
 | 6: Feedback | 2 | ⭐⭐ | Feedback collection |
 | 7: Polish | 3 | ⭐⭐⭐ | Production-ready |
 
-**Total**: ~23 days (all phases) | **MVP** (Phases 0-2): ~9 days
+**Total**: ~24 days (all phases) | **MVP** (Phases 0-2): ~10 days
 
 ## Dependencies Map
 
 ```
 Phase 0 (Setup)
   └──► Phase 1 (Projects & Tasks)
+         ├──► Phase 1b (Project Editing)
          ├──► Phase 2 (Public Page)
          └──► Phase 3 (Settings)
                 └──► Phase 4 (Billing & Plans) ◄── depends on Phase 3 branding
