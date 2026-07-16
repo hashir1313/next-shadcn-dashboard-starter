@@ -45,10 +45,10 @@ export async function getProjectBySlug(userId: string, slug: string): Promise<Pr
 }
 
 export async function getPublicProject(
-  username: string,
+  userId: string,
   slug: string
 ): Promise<ProjectResponse & { tasks?: Task[] }> {
-  return apiClient<ProjectResponse & { tasks?: Task[] }>(`/public/${username}/${slug}`);
+  return apiClient<ProjectResponse & { tasks?: Task[] }>(`/public/${userId}/${slug}`);
 }
 
 export async function createProject(

@@ -5,12 +5,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ username: string; slug: string }> }
+  { params }: { params: Promise<{ userId: string; slug: string }> }
 ) {
-  const { username, slug } = await params;
+  const { userId, slug } = await params;
 
   // Find user
-  const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
+  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   if (!user) {
     return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
   }

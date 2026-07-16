@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 /**
  * Ensures a Clerk user exists in the DB.
  * Called before any operation that requires a user_id FK.
+ * Backfills publicEmail if the existing row has NULL.
  */
 export async function ensureUser(clerkUser: {
   id: string;
@@ -14,7 +15,18 @@ export async function ensureUser(clerkUser: {
   emailAddresses?: { emailAddress: string }[];
 }) {
   const [existing] = await db.select().from(users).where(eq(users.id, clerkUser.id)).limit(1);
-  if (existing) return existing;
+
+  if (existing) {
+    // Backfill publicEmail if missing
+    if (!existing.publicEmail && clerkUser.emailAddresses?.[0]?.emailAddress) {
+      await db
+        .update(users)
+        .set({ publicEmail: clerkUser.emailAddresses[0].emailAddress })
+        .where(eq(users.id, clerkUser.id));
+      return { ...existing, publicEmail: clerkUser.emailAddresses[0].emailAddress };
+    }
+    return existing;
+  }
 
   const displayName = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || 'User';
   const username =
