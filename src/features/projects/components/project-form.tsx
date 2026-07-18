@@ -11,12 +11,13 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import * as z from 'zod';
 import { projectSchema, type ProjectFormValues } from '../schemas/project';
-import { useAuth } from '@clerk/nextjs';
+import { useSession } from '@/lib/auth-client';
 import { Icons } from '@/components/icons';
 
 export default function ProjectForm() {
   const router = useRouter();
-  const { userId } = useAuth();
+  const { data: sessionData } = useSession();
+  const userId = sessionData?.user?.id;
   const [initialTasks, setInitialTasks] = useState<string[]>([]);
   const [taskInput, setTaskInput] = useState('');
 

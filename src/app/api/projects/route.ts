@@ -2,8 +2,6 @@ import { db } from '@/lib/db';
 import { projects, tasks } from '@/lib/db/schema';
 import { eq, and, desc, asc, ilike, count, sql } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
-import { ensureUser } from '@/lib/db/users';
-import { clerkClient } from '@clerk/nextjs/server';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -56,17 +54,6 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
-
-  // Ensure user exists in DB (Clerk users aren't auto-synced)
-  const client = await clerkClient();
-  const clerkUser = await client.users.getUser(userId);
-  await ensureUser({
-    id: clerkUser.id,
-    username: clerkUser.username ?? undefined,
-    firstName: clerkUser.firstName ?? undefined,
-    lastName: clerkUser.lastName ?? undefined,
-    emailAddresses: clerkUser.emailAddresses.map((e) => ({ emailAddress: e.emailAddress }))
-  });
 
   const finalSlug =
     slug ||

@@ -1,8 +1,7 @@
 import { db } from '@/lib/db';
-import { users, projects, tasks, brandingConfigs } from '@/lib/db/schema';
+import { user, projects, tasks, brandingConfigs } from '@/lib/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
-import { clerkClient } from '@clerk/nextjs/server';
 
 export type PublicPageData = {
   project: {
@@ -38,28 +37,16 @@ export type PublicPageData = {
 };
 
 export async function getPublicPageData(userId: string, slug: string): Promise<PublicPageData> {
-  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const [userRow] = await db.select().from(user).where(eq(user.id, userId)).limit(1);
 
-  if (!user) notFound();
+  if (!userRow) notFound();
 
-  // Runtime fallback: resolve email from Clerk if DB has NULL publicEmail
-  let publicEmail = user.publicEmail;
-  if (!publicEmail) {
-    try {
-      const client = await clerkClient();
-      const clerkUser = await client.users.getUser(userId);
-      publicEmail =
-        clerkUser.emailAddresses.find((e) => e.id === clerkUser.primaryEmailAddressId)
-          ?.emailAddress ?? null;
-    } catch {
-      // Clerk API unavailable — proceed without email
-    }
-  }
+  const publicEmail = userRow.publicEmail || userRow.email;
 
   const [project] = await db
     .select()
     .from(projects)
-    .where(and(eq(projects.userId, user.id), eq(projects.slug, slug)))
+    .where(and(eq(projects.userId, userRow.id), eq(projects.slug, slug)))
     .limit(1);
 
   if (!project) notFound();
@@ -71,11 +58,11 @@ export async function getPublicPageData(userId: string, slug: string): Promise<P
     .orderBy(asc(tasks.position));
 
   let branding: PublicPageData['branding'] = null;
-  if (user.plan === 'pro') {
+  if (userRow.plan === 'pro') {
     const [brandingRow] = await db
       .select()
       .from(brandingConfigs)
-      .where(eq(brandingConfigs.userId, user.id))
+      .where(eq(brandingConfigs.userId, userRow.id))
       .limit(1);
 
     if (brandingRow) {
@@ -104,9 +91,9 @@ export async function getPublicPageData(userId: string, slug: string): Promise<P
       position: t.position
     })),
     freelancer: {
-      displayName: user.displayName,
+      displayName: userRow.name,
       publicEmail,
-      logoUrl: user.logoUrl
+      logoUrl: userRow.logoUrl
     },
     branding
   };

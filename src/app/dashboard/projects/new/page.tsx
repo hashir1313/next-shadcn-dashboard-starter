@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth-utils';
 import { redirect } from 'next/navigation';
 import PageContainer from '@/components/layout/page-container';
 import ProjectForm from '@/features/projects/components/project-form';
@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 export default async function NewProjectPage() {
-  const { userId } = await auth();
+  const userId = await getUserId();
   if (!userId) redirect('/auth/sign-in');
 
   return (

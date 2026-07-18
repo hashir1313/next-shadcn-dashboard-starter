@@ -1,28 +1,31 @@
 'use client';
 
 import PageContainer from '@/components/layout/page-container';
-import { OrganizationList } from '@clerk/nextjs';
-import { workspacesInfoContent } from '@/config/infoconfig';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export default function WorkspacesPage() {
   return (
     <PageContainer
       pageTitle='Workspaces'
-      pageDescription='Manage your workspaces and switch between them'
-      infoContent={workspacesInfoContent}
+      pageDescription='Manage your workspaces and switch between them.'
     >
-      <OrganizationList
-        appearance={{
-          elements: {
-            organizationListBox: 'space-y-2',
-            organizationPreview: 'rounded-lg border p-4 hover:bg-accent',
-            organizationPreviewMainIdentifier: 'text-lg font-semibold',
-            organizationPreviewSecondaryIdentifier: 'text-sm text-muted-foreground'
-          }
-        }}
-        afterSelectOrganizationUrl='/dashboard/workspaces/team'
-        afterCreateOrganizationUrl='/dashboard/workspaces/team'
-      />
+      <div className='space-y-6'>
+        <Card>
+          <CardHeader>
+            <CardTitle>Workspaces</CardTitle>
+            <CardDescription>
+              Organization features coming soon. Better Auth supports teams and organizations.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className='text-muted-foreground mb-4'>
+              Workspaces allow you to collaborate with team members and manage shared projects.
+            </p>
+            <Button disabled>Coming Soon</Button>
+          </CardContent>
+        </Card>
+      </div>
     </PageContainer>
   );
 }

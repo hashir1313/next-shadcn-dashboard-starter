@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { projects, tasks, users } from '@/lib/db/schema';
+import { projects, tasks, user } from '@/lib/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -10,8 +10,8 @@ export async function GET(
   const { userId, slug } = await params;
 
   // Find user
-  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-  if (!user) {
+  const [userRow] = await db.select().from(user).where(eq(user.id, userId)).limit(1);
+  if (!userRow) {
     return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
   }
 
@@ -19,7 +19,7 @@ export async function GET(
   const [project] = await db
     .select()
     .from(projects)
-    .where(and(eq(projects.userId, user.id), eq(projects.slug, slug)))
+    .where(and(eq(projects.userId, userRow.id), eq(projects.slug, slug)))
     .limit(1);
 
   if (!project) {
@@ -48,9 +48,9 @@ export async function GET(
       updatedAt: t.updatedAt.toISOString()
     })),
     freelancer: {
-      displayName: user.displayName,
-      publicEmail: user.publicEmail,
-      logoUrl: user.logoUrl
+      displayName: userRow.name,
+      publicEmail: userRow.publicEmail,
+      logoUrl: userRow.logoUrl
     },
     message: 'OK'
   });

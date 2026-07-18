@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { projectByIdOptions, tasksQueryOptions } from '../api/queries';
-import { useAuth } from '@clerk/nextjs';
+import { useSession } from '@/lib/auth-client';
 import { notFound } from 'next/navigation';
 import { Progress } from '@/components/ui/progress';
 import ViewSwitcher from './view-switcher';
@@ -21,7 +21,8 @@ type ProjectViewPageProps = {
 };
 
 export default function ProjectViewPage({ projectId }: ProjectViewPageProps) {
-  const { userId } = useAuth();
+  const { data: sessionData } = useSession();
+  const userId = sessionData?.user?.id;
   const [view, setView] = useState<'list' | 'kanban'>('list');
   const [copied, setCopied] = useState(false);
   const [editOpen, setEditOpen] = useState(false);

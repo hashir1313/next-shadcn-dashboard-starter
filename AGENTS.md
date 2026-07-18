@@ -12,7 +12,7 @@ This file provides essential information for AI coding agents working on this pr
 - **Language**: TypeScript 5.7
 - **Styling**: Tailwind CSS v4
 - **UI Components**: shadcn/ui (New York style)
-- **Authentication**: Clerk (with Organizations/Billing support)
+- **Authentication**: Better Auth (self-hosted, with Organizations support)
 - **Error Tracking**: Sentry
 - **Charts**: Recharts
 - **Containerization**: Docker (Node.js & Bun Dockerfiles)
@@ -53,9 +53,9 @@ The project follows a feature-based folder structure designed for scalability in
 
 ### Authentication & Authorization
 
-- Clerk for authentication and user management
-- Clerk Organizations for multi-tenant workspaces
-- Clerk Billing for subscription management (B2B)
+- Better Auth for self-hosted authentication and user management
+- Better Auth Organizations plugin for multi-tenant workspaces
+- Paddle for subscription management (B2B)
 - Client-side RBAC for navigation visibility
 
 ### Data & APIs
@@ -151,7 +151,7 @@ The project follows a feature-based folder structure designed for scalability in
     └── themes/            # Individual theme files
 
 /docs                      # Documentation
-│   ├── clerk_setup.md     # Clerk configuration guide
+│   ├── better-auth_setup.md  # Better Auth configuration guide
 │   ├── nav-rbac.md        # Navigation RBAC documentation
 │   └── themes.md          # Theme customization guide
 
@@ -200,17 +200,16 @@ bun run prepare      # Install Husky hooks
 
 Copy `env.example.txt` to `.env.local` and configure:
 
-### Required for Authentication (Clerk)
+### Required for Authentication (Better Auth)
 
 ```env
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
-CLERK_SECRET_KEY=sk_...
+BETTER_AUTH_SECRET=your-secret-key-min-32-chars
+BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
 
-# Redirect URLs
-NEXT_PUBLIC_CLERK_SIGN_IN_URL="/auth/sign-in"
-NEXT_PUBLIC_CLERK_SIGN_UP_URL="/auth/sign-up"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard/overview"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/dashboard/overview"
+# OAuth (optional)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
 ```
 
 ### Optional for Error Tracking (Sentry)
@@ -223,7 +222,7 @@ SENTRY_AUTH_TOKEN=sntrys_...
 NEXT_PUBLIC_SENTRY_DISABLED="false"  # Set to "true" to disable in dev
 ```
 
-**Note**: Clerk supports "keyless mode" - the app works without API keys for initial development.
+**Note**: Better Auth is self-hosted — your users live in your database. No external service required.
 
 ---
 
@@ -335,7 +334,7 @@ export const navGroups: NavGroup[] = [
 
 ### Client-Side Filtering
 
-The `useFilteredNavItems()` hook in `src/hooks/use-nav.ts` filters navigation client-side using Clerk's `useOrganization()` and `useUser()` hooks. This is for UX only - actual security checks must happen server-side.
+The `useFilteredNavItems()` hook in `src/hooks/use-nav.ts` filters navigation client-side using Better Auth's `useSession()` hook. This is for UX only - actual security checks must happen server-side.
 
 ---
 
@@ -343,38 +342,46 @@ The `useFilteredNavItems()` hook in `src/hooks/use-nav.ts` filters navigation cl
 
 ### Protected Routes
 
-Dashboard routes use Clerk's middleware pattern. Pages that require organization:
+Dashboard routes use Better Auth middleware. Pages that require authentication:
 
 ```tsx
-import { auth } from '@clerk/nextjs';
+import { getUserId } from '@/lib/auth-utils';
 import { redirect } from 'next/navigation';
 
 export default async function Page() {
-  const { orgId } = await auth();
-  if (!orgId) redirect('/dashboard/workspaces');
+  const userId = await getUserId();
+  if (!userId) redirect('/auth/sign-in');
   // ...
 }
 ```
 
 ### Plan/Feature Protection
 
-Use Clerk's `<Protect>` component for client-side:
+Check the user's plan from the database for client-side gating:
 
 ```tsx
-import { Protect } from '@clerk/nextjs';
+import { useSession } from '@/lib/auth-client';
 
-<Protect plan='pro' fallback={<UpgradePrompt />}>
-  <PremiumContent />
-</Protect>;
+const { data: session } = useSession();
+const user = session?.user;
+
+// Check plan from DB user fields
+if (user?.plan !== 'pro') {
+  return <UpgradePrompt />;
+}
 ```
 
-Use `has()` function for server-side checks:
+For server-side checks, query the user's plan from the database:
 
 ```tsx
-import { auth } from '@clerk/nextjs';
+import { getUserId } from '@/lib/auth-utils';
+import { db } from '@/lib/db';
+import { user } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
-const { has } = await auth();
-const hasFeature = has({ feature: 'premium_access' });
+const userId = await getUserId();
+const [userData] = await db.select().from(user).where(eq(user.id, userId)).limit(1);
+const isPro = userData?.plan === 'pro';
 ```
 
 ---
@@ -570,7 +577,7 @@ Both use `output: 'standalone'` in `next.config.ts`. Pass `NEXT_PUBLIC_*` vars a
 ### Build Considerations
 
 - Output: `standalone` (optimized for Docker/self-hosting)
-- Images: Configured for `api.slingacademy.com`, `img.clerk.com`, `clerk.com`
+- Images: Configured for `api.slingacademy.com`, `*.googleusercontent.com`
 - Sentry source maps uploaded automatically in CI
 
 ---
@@ -584,7 +591,7 @@ A single `scripts/cleanup.js` file handles removal of optional features:
 node scripts/cleanup.js --interactive
 
 # Remove specific features
-node scripts/cleanup.js clerk           # Remove auth/org/billing
+node scripts/cleanup.js better-auth      # Remove auth/org/billing
 node scripts/cleanup.js kanban          # Remove kanban board
 node scripts/cleanup.js chat            # Remove messaging UI
 node scripts/cleanup.js notifications   # Remove notification center
@@ -710,10 +717,11 @@ See "Theming System" section above or `docs/themes.md`.
 - Ensure using Tailwind CSS v4 syntax (`@import 'tailwindcss'`)
 - Check `postcss.config.js` uses `@tailwindcss/postcss`
 
-**Clerk keyless mode popup**
+**Better Auth not initializing**
 
-- Normal in development without API keys
-- Click popup to claim application or set env variables
+- Ensure `BETTER_AUTH_SECRET` is set in `.env.local`
+- Check that the API route `src/app/api/auth/[...all]/route.ts` exists
+- Verify database connection with `bun run db:push`
 
 **Theme not applying**
 
@@ -730,7 +738,7 @@ See "Theming System" section above or `docs/themes.md`.
 ## External Documentation
 
 - [Next.js App Router](https://nextjs.org/docs/app)
-- [Clerk Next.js SDK](https://clerk.com/docs/references/nextjs)
+- [Better Auth Documentation](https://www.better-auth.com/docs)
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [Tailwind CSS v4](https://tailwindcss.com/docs)
 - [TanStack Table](https://tanstack.com/table/latest)

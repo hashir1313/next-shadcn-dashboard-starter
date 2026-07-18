@@ -2,52 +2,76 @@
 
 import PageContainer from '@/components/layout/page-container';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useOrganization } from '@clerk/nextjs';
-import { PricingTable } from '@clerk/nextjs';
+import { useSession } from '@/lib/auth-client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Icons } from '@/components/icons';
-import { billingInfoContent } from '@/config/infoconfig';
 
 export default function BillingPage() {
-  const { organization, isLoaded } = useOrganization();
+  const { data: sessionData } = useSession();
+  const user = sessionData?.user;
 
   return (
     <PageContainer
-      isLoading={!isLoaded}
-      access={!!organization}
-      accessFallback={
-        <div className='flex min-h-[400px] items-center justify-center'>
-          <div className='space-y-2 text-center'>
-            <h2 className='text-2xl font-semibold'>No Organization Selected</h2>
-            <p className='text-muted-foreground'>
-              Please select or create an organization to view billing information.
-            </p>
-          </div>
-        </div>
-      }
-      infoContent={billingInfoContent}
       pageTitle='Billing & Plans'
-      pageDescription={`Manage your subscription and usage limits for ${organization?.name}`}
+      pageDescription='Manage your subscription and usage limits.'
     >
       <div className='space-y-6'>
-        {/* Info Alert */}
         <Alert>
           <Icons.info className='h-4 w-4' />
           <AlertDescription>
-            Plans and subscriptions are managed through Clerk Billing. Subscribe to a plan to unlock
+            Plans and subscriptions are managed through Paddle. Subscribe to a plan to unlock
             features and higher limits.
           </AlertDescription>
         </Alert>
 
-        {/* Clerk Pricing Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Current Plan</CardTitle>
+            <CardDescription>Your current subscription plan</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='flex items-center gap-4'>
+              <div className='rounded-lg border bg-muted/50 px-4 py-2'>
+                <span className='text-lg font-semibold'>Free</span>
+              </div>
+              <div className='text-muted-foreground text-sm'>
+                You are on the Free plan. Upgrade to Pro for unlimited projects and branding.
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Available Plans</CardTitle>
-            <CardDescription>Choose a plan that fits your organization's needs</CardDescription>
+            <CardDescription>Choose a plan that fits your needs</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className='mx-auto max-w-4xl'>
-              <PricingTable for='organization' />
+            <div className='grid gap-4 md:grid-cols-2'>
+              <div className='rounded-lg border p-6'>
+                <h3 className='text-lg font-semibold'>Free</h3>
+                <p className='text-muted-foreground mt-1 text-sm'>
+                  Core features for getting started
+                </p>
+                <ul className='text-muted-foreground mt-4 space-y-2 text-sm'>
+                  <li>• Up to 3 projects</li>
+                  <li>• Basic task management</li>
+                  <li>• Public progress pages</li>
+                  <li>• 10 dashboard themes</li>
+                </ul>
+              </div>
+              <div className='rounded-lg border border-primary/50 p-6'>
+                <h3 className='text-lg font-semibold'>Pro</h3>
+                <p className='text-muted-foreground mt-1 text-sm'>
+                  For professionals who need more
+                </p>
+                <ul className='text-muted-foreground mt-4 space-y-2 text-sm'>
+                  <li>• Unlimited projects</li>
+                  <li>• Branded public pages</li>
+                  <li>• Custom themes & logo</li>
+                  <li>• Priority support</li>
+                </ul>
+              </div>
             </div>
           </CardContent>
         </Card>

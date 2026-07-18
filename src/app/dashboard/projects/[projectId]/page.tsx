@@ -1,7 +1,7 @@
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/query-client';
 import { projectByIdOptions, tasksQueryOptions } from '@/features/projects/api/queries';
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth-utils';
 import { redirect } from 'next/navigation';
 import PageContainer from '@/components/layout/page-container';
 import ProjectViewPage from '@/features/projects/components/project-view-page';
@@ -16,7 +16,7 @@ type PageProps = {
 
 export default async function ProjectDetailPage(props: PageProps) {
   const params = await props.params;
-  const { userId } = await auth();
+  const userId = await getUserId();
   if (!userId) redirect('/auth/sign-in');
 
   const queryClient = getQueryClient();
