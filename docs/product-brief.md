@@ -27,7 +27,7 @@ Freelancers struggle with one recurring question from clients: *"How's the proje
 ## High-Level Feature Overview
 
 ### Freelancer Dashboard (Free)
-- Account creation via Clerk (email, Google)
+- Account creation via Better Auth (email, Google)
 - Project CRUD (name, slug, description, tasks)
 - Task management with 3 states: Pending → In Progress → Completed
 - Progress calculation: `(Completed / Total) × 100`
@@ -95,7 +95,7 @@ Freelancers struggle with one recurring question from clients: *"How's the proje
 | Database | PostgreSQL on Neon (serverless) via Drizzle ORM |
 | Styling | Tailwind CSS v4 |
 | UI Components | shadcn/ui + Base UI |
-| Auth | Clerk |
+| Auth | Better Auth (self-hosted, Drizzle adapter) |
 | Data Fetching | TanStack React Query |
 | Forms | TanStack Form + Zod |
 | Tables | TanStack Table |

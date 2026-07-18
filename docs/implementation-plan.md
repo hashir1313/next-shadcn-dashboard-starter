@@ -17,13 +17,13 @@ Build in layers, starting with a working end-to-end skeleton for the core flow, 
 | # | Task | Details |
 |---|---|---|
 | 0.1 | Explore existing demo features | Keep all starter features (Chat, Kanban, products, React Query demo, forms) as reference/inspiration for building Traqqy's UI |
-| 0.2 | Configure middleware | Add `middleware.ts` with Clerk route protection for `/dashboard/*` and `/admin/*`. Public routes `/[username]/[projectSlug]` bypass auth |
+| 0.2 | Configure middleware | Add `middleware.ts` with Better Auth session check for `/dashboard/*` and `/admin/*`. Public routes `/[username]/[projectSlug]` bypass auth |
 | 0.3 | Add new dependencies | Install `posthog-js`, `@vercel/blob`, `@paddle/paddle-js` for analytics, file storage, and subscription checkout |
 | 0.4 | Create utility types | Add `ApiResponse<T>` generic type, standardize on common response format |
 | 0.5 | Install Drizzle ORM + Neon driver | `bun add drizzle-orm @neondatabase/serverless` + `bun add -D drizzle-kit`. Configure `drizzle.config.ts` with Neon connection string |
 | 0.6 | Set up new mock stores | Create `mock-api-projects.ts`, `mock-api-tasks.ts`, `mock-api-branding.ts`, `mock-api-feedback.ts`, `mock-api-flags.ts` — mirror the database schema. Mock data allows frontend dev before Neon is wired up |
 | 0.7 | Set up Neon project | Create a Neon project (free tier: 0.5GB storage, no credit card required). Get connection string for `.env.local` |
-| 0.8 | Set up admin role in Clerk | Configure admin role/flag in Clerk Dashboard or via metadata |
+| 0.8 | Set up admin role in Better Auth | Configure admin role/flag in user metadata |
 
 ### Deliverables
 - Clean project with all demo features preserved as reference
@@ -35,7 +35,6 @@ Build in layers, starting with a working end-to-end skeleton for the core flow, 
 ### Verification
 - `bun run dev` starts without errors
 - Sign in/out flow works
-- Admin role detectable via `auth().has()`
 - Drizzle can connect to Neon (`bun run db:generate` runs cleanly)
 
 ---

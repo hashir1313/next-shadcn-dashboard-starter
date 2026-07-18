@@ -111,7 +111,7 @@ src/
 │   │   │   ├── account/           # Account management
 │   │   │   └── branding/          # Branding (Pro only)
 │   │   ├── billing/               # Billing & plans
-│   │   ├── profile/               # Clerk UserProfile
+│   │   ├── profile/               # User profile page
 │   │   └── notifications/         # Notification center
 │   │
 │   ├── [username]/               # Public routes
@@ -135,7 +135,7 @@ src/
 │   │   ├── branding/              # Branding config CRUD
 │   │   └── announcements/         # Announcements CRUD
 │   │
-│   ├── layout.tsx                 # Root layout (Clerk, Theme, Query)
+│   ├── layout.tsx                 # Root layout (Theme, Query)
 │   └── page.tsx                   # Landing / redirect
 │
 ├── components/
@@ -240,7 +240,7 @@ src/
 │   ├── theme.css                 # Imports all theme CSS
 │   └── themes/                   # 10 theme CSS files
 │
-└── middleware.ts                 # Clerk middleware for route protection
+└── middleware.ts                 # Better Auth session cookie check
 ```
 
 ## 3. Component Architecture
@@ -311,19 +311,17 @@ HydrationBoundary ────────────────────�
 
 | Concern | Approach |
 |---|---|
-| Route protection | Clerk middleware + `auth()` checks in server components |
-| Admin access | `auth().has({ role: 'admin' })` check in admin layout |
-| Data isolation | All queries filtered by `userId` from Clerk |
-| Public page | No auth — fetches by username + slug publicly |
+| Route protection | Better Auth cookie-based session check in `middleware.ts` |
+| Data isolation | All queries filtered by `userId` from session |
+| Public page | No auth — fetches by userId + slug publicly |
 | Feature gates | `user.plan` from database (synced via Paddle webhooks) for Pro features |
-| Impersonation | Admin-only endpoint that sets a session cookie |
-| API protection | Route handlers check `auth()` before processing |
+| API protection | Session check via `getSession()` / `getUserId()` from `auth-utils.ts` |
 
 ## 6. Key Integration Points
 
 | Service | Integration |
 |---|---|
-| Clerk Auth | `@clerk/nextjs` — sign-in, sign-up, user/org data, session |
+| Better Auth | `better-auth` — self-hosted auth with Drizzle adapter, email/password + Google OAuth |
 | Paddle | Paddle.js for checkout, webhooks for plan sync, plan-based gating via DB |
 | PostHog | `posthog-js` for product analytics |
 | Sentry | Already integrated — error tracking for both client/server |

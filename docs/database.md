@@ -31,14 +31,17 @@ Feedback ──N:1──▶ Project (nullable)
 
 ### User
 
-Represents a freelancer account. Maps to Clerk's user ID as the primary key.
+Represents a freelancer account. Uses Better Auth's `user` table with Traqqy-specific fields.
 
 | Field | Type | Description |
 |---|---|---|
-| `id` | `string` (Clerk `userId`) | Primary key, matches Clerk user |
+| `id` | `string` (Better Auth UUID) | Primary key |
+| `name` | `string` | Display name |
+| `email` | `string` | Unique email |
+| `emailVerified` | `boolean` | Email verification status |
+| `image` | `string?` | Profile image URL |
 | `username` | `string` | Unique, URL-safe slug for public page |
-| `displayName` | `string` | Freelancer display name on public page |
-| `publicEmail` | `string?` | Override email for public page; defaults to Clerk email |
+| `publicEmail` | `string?` | Override email for public page; defaults to account email |
 | `logoUrl` | `string?` | Logo URL (Pro feature) |
 | `plan` | `enum: 'free' | 'pro'` | Current subscription plan |
 | `status` | `enum: 'active' | 'suspended' | 'deleted'` | Account status |
@@ -50,9 +53,12 @@ Represents a freelancer account. Maps to Clerk's user ID as the primary key.
 ```typescript
 // src/features/users/api/types.ts
 export interface User {
-  id: string;                    // Clerk userId
+  id: string;                    // Better Auth UUID
+  name: string;                  // Display name
+  email: string;                 // Unique email
+  emailVerified: boolean;
+  image?: string;
   username: string;              // Unique per user
-  displayName: string;
   publicEmail?: string;          // Override for public page
   logoUrl?: string;              // Pro feature
   plan: 'free' | 'pro';

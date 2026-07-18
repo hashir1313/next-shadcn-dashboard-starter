@@ -18,10 +18,10 @@ Traqqy is a SaaS application that lets freelancers manage projects and share liv
 
 | ID | Requirement | Priority |
 |---|---|---|
-| AUTH-1 | Freelancer can sign up using email/password and OAuth (Google) via Clerk | P0 |
+| AUTH-1 | Freelancer can sign up using email/password and OAuth (Google) via Better Auth | P0 |
 | AUTH-2 | Freelancer can sign in with existing account | P0 |
 | AUTH-3 | Freelancer can sign out | P0 |
-| AUTH-4 | Freelancer can reset password via Clerk | P1 |
+| AUTH-4 | Freelancer can reset password via Better Auth | P1 |
 | AUTH-5 | Freelancer is redirected to `/dashboard/overview` after sign-in | P0 |
 | AUTH-6 | Unauthenticated users accessing `/dashboard/*` are redirected to sign-in | P0 |
 
