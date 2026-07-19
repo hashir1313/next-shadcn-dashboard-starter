@@ -166,6 +166,12 @@ export const navGroups: NavGroup[] = [
         isActive: true,
         items: [
           {
+            title: 'Settings',
+            url: '/dashboard/settings',
+            icon: 'settings',
+            shortcut: ['s', 's']
+          },
+          {
             title: 'Profile',
             url: '/dashboard/profile',
             icon: 'profile',

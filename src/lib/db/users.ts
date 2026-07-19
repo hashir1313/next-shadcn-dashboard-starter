@@ -19,12 +19,22 @@ export async function updateUserProfile(
   data: {
     username?: string;
     displayName?: string;
+    name?: string;
     publicEmail?: string;
     logoUrl?: string;
+    dashboardTheme?: string;
+    dashboardMode?: 'light' | 'dark' | 'system';
   }
 ) {
-  await db
-    .update(user)
-    .set({ ...data, updatedAt: new Date() })
-    .where(eq(user.id, userId));
+  const updateData: Record<string, unknown> = { updatedAt: new Date() };
+
+  if (data.username !== undefined) updateData.username = data.username;
+  if (data.displayName !== undefined) updateData.name = data.displayName;
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.publicEmail !== undefined) updateData.publicEmail = data.publicEmail;
+  if (data.logoUrl !== undefined) updateData.logoUrl = data.logoUrl;
+  if (data.dashboardTheme !== undefined) updateData.dashboardTheme = data.dashboardTheme;
+  if (data.dashboardMode !== undefined) updateData.dashboardMode = data.dashboardMode;
+
+  await db.update(user).set(updateData).where(eq(user.id, userId));
 }
