@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from '@/lib/auth-client';
+import { useSession, signOut } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useState } from 'react';
@@ -69,6 +69,7 @@ export function SettingsAccountForm() {
         throw new Error(data.message || 'Failed to delete account');
       }
 
+      await signOut();
       toast.success('Account deleted. Redirecting...');
       router.push('/auth/sign-in');
     } catch (error) {

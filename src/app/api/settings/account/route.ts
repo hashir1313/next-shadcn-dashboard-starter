@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserId, getSession } from '@/lib/auth-utils';
+import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { user } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -72,7 +73,7 @@ export async function PUT(request: Request) {
   return NextResponse.json({ success: true, message: 'Account updated' });
 }
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
   const userId = await getUserId();
   if (!userId) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
@@ -84,5 +85,18 @@ export async function DELETE() {
     .set({ status: 'deleted', updatedAt: new Date() })
     .where(eq(user.id, userId));
 
-  return NextResponse.json({ success: true, message: 'Account deleted' });
+  // Revoke all sessions for this user
+  const sessions = await db.query.session.findMany({
+    where: (s, { eq }) => eq(s.userId, userId)
+  });
+
+  const headers = new Headers(request.headers);
+  for (const session of sessions) {
+    await auth.api.revokeSession({ body: { token: session.token }, headers });
+  }
+
+  const response = NextResponse.json({ success: true, message: 'Account deleted' });
+  // Clear session cookie
+  response.cookies.set('better-auth.session_token', '', { maxAge: 0, path: '/' });
+  return response;
 }
