@@ -1,6 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
-import { createAuthMiddleware } from 'better-auth/api';
+import { createAuthMiddleware, APIError } from 'better-auth/api';
 import { db } from '@/lib/db';
 import { user } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -26,11 +26,22 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        after: async (userData) => {
-          await db
-            .update(user)
-            .set({ status: 'active', plan: 'free' })
-            .where(eq(user.id, userData.id));
+        before: async (userData) => {
+          // Block sign-up if email belongs to a deleted/suspended account
+          if (userData.email) {
+            const [existing] = await db
+              .select({ id: user.id, status: user.status })
+              .from(user)
+              .where(eq(user.email, userData.email))
+              .limit(1);
+
+            if (existing && (existing.status === 'deleted' || existing.status === 'suspended')) {
+              throw new APIError('FORBIDDEN', {
+                message: 'This email is not available'
+              });
+            }
+          }
+          return { data: userData };
         }
       }
     }
@@ -46,7 +57,9 @@ export const auth = betterAuth({
           .limit(1);
 
         if (foundUser && (foundUser.status === 'deleted' || foundUser.status === 'suspended')) {
-          throw new Error('Account is not available');
+          throw new APIError('FORBIDDEN', {
+            message: 'Account is not available'
+          });
         }
       }
     })
