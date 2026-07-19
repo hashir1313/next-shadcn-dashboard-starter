@@ -1,8 +1,9 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { createAuthMiddleware, APIError } from 'better-auth/api';
+import { customSession } from 'better-auth/plugins';
 import { db } from '@/lib/db';
-import { user } from '@/lib/db/schema';
+import { user as userTable } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const auth = betterAuth({
@@ -27,12 +28,11 @@ export const auth = betterAuth({
     user: {
       create: {
         before: async (userData) => {
-          // Block sign-up if email belongs to a deleted/suspended account
           if (userData.email) {
             const [existing] = await db
-              .select({ id: user.id, status: user.status })
-              .from(user)
-              .where(eq(user.email, userData.email))
+              .select({ id: userTable.id, status: userTable.status })
+              .from(userTable)
+              .where(eq(userTable.email, userData.email))
               .limit(1);
 
             if (existing && (existing.status === 'deleted' || existing.status === 'suspended')) {
@@ -46,14 +46,45 @@ export const auth = betterAuth({
       }
     }
   },
+  plugins: [
+    customSession(async ({ user, session }) => {
+      const [dbUser] = await db
+        .select({
+          plan: userTable.plan,
+          status: userTable.status,
+          username: userTable.username,
+          dashboardTheme: userTable.dashboardTheme,
+          dashboardMode: userTable.dashboardMode,
+          publicEmail: userTable.publicEmail,
+          logoUrl: userTable.logoUrl
+        })
+        .from(userTable)
+        .where(eq(userTable.id, user.id))
+        .limit(1);
+
+      return {
+        user: {
+          ...user,
+          plan: dbUser?.plan ?? 'free',
+          status: dbUser?.status ?? 'active',
+          username: dbUser?.username ?? null,
+          dashboardTheme: dbUser?.dashboardTheme ?? 'vercel',
+          dashboardMode: dbUser?.dashboardMode ?? 'system',
+          publicEmail: dbUser?.publicEmail ?? null,
+          logoUrl: dbUser?.logoUrl ?? null
+        },
+        session
+      };
+    })
+  ],
   hooks: {
     after: createAuthMiddleware(async (ctx) => {
       if (ctx.path.startsWith('/sign-in/') && ctx.context.newSession?.user) {
         const userId = ctx.context.newSession.user.id;
         const [foundUser] = await db
-          .select({ status: user.status })
-          .from(user)
-          .where(eq(user.id, userId))
+          .select({ status: userTable.status })
+          .from(userTable)
+          .where(eq(userTable.id, userId))
           .limit(1);
 
         if (foundUser && (foundUser.status === 'deleted' || foundUser.status === 'suspended')) {
