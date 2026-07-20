@@ -8,7 +8,7 @@ type PublicLayoutProps = {
 
 export default function PublicLayout({ children }: PublicLayoutProps) {
   return (
-    <html lang='en' suppressHydrationWarning>
+    <html lang='en' data-theme='vercel' suppressHydrationWarning>
       <body className={cn('bg-background min-h-screen font-sans antialiased', fontVariables)}>
         {children}
       </body>

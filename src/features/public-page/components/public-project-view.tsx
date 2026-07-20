@@ -9,9 +9,9 @@ type PublicProjectViewProps = {
 function getBrandingStyles(branding: PublicPageData['branding']) {
   if (!branding) return {};
   return {
-    '--public-primary': branding.primaryColor,
-    '--public-bg': branding.backgroundColor,
-    '--public-radius': `${branding.borderRadius}px`,
+    '--primary': branding.primaryColor,
+    '--background': branding.backgroundColor,
+    '--radius': `${branding.borderRadius}px`,
     fontFamily: `var(--font-${branding.fontFamily}), sans-serif`
   } as React.CSSProperties;
 }
