@@ -8,10 +8,10 @@ import { eq } from 'drizzle-orm';
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: 'pg' }),
-  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-  secret: process.env.BETTER_AUTH_SECRET || 'fallback-secret-change-me',
+  baseURL: process.env.BETTER_AUTH_URL!,
+  secret: process.env.BETTER_AUTH_SECRET!,
   trustedOrigins: [
-    process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+    process.env.BETTER_AUTH_URL!,
     'https://next-shadcn-dashboard-starter-mu.vercel.app'
   ],
   emailAndPassword: {
@@ -20,8 +20,8 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || ''
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET
     }
   },
   session: {
