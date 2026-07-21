@@ -12,7 +12,10 @@ export function middleware(request: NextRequest) {
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
   // Check for Better Auth session cookie
-  const sessionCookie = request.cookies.get('better-auth.session_token');
+  // On HTTPS, Better Auth prefixes the cookie with __Secure-
+  const sessionCookie =
+    request.cookies.get('__Secure-better-auth.session_token') ||
+    request.cookies.get('better-auth.session_token');
   const hasSession = !!sessionCookie?.value;
 
   // Redirect unauthenticated users away from protected routes
