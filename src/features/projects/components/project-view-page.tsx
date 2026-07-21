@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { projectByIdOptions, tasksQueryOptions } from '../api/queries';
 import { useSession } from '@/lib/auth-client';
@@ -27,6 +27,11 @@ export default function ProjectViewPage({ projectId }: ProjectViewPageProps) {
   const [copied, setCopied] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [origin, setOrigin] = useState('');
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
   const { data: projectData } = useSuspenseQuery(projectByIdOptions(projectId));
   const { data: tasksData } = useSuspenseQuery(tasksQueryOptions(projectId));
@@ -104,7 +109,7 @@ export default function ProjectViewPage({ projectId }: ProjectViewPageProps) {
               <div className='flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 text-sm'>
                 <Icons.externalLink className='h-4 w-4 text-muted-foreground' />
                 <span className='text-muted-foreground'>
-                  {typeof window !== 'undefined' ? window.location.origin : ''}
+                  {origin}
                   {publicUrl}
                 </span>
               </div>

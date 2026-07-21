@@ -29,6 +29,7 @@ import {
 import { UserAvatarProfile } from '@/components/user-avatar-profile';
 import { navGroups } from '@/config/nav-config';
 import { useSession, authClient } from '@/lib/auth-client';
+import { Badge } from '@/components/ui/badge';
 import { useFilteredNavGroups } from '@/hooks/use-nav';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -172,15 +173,27 @@ export default function AppSidebar() {
                   <DropdownMenuLabel className='p-0 font-normal'>
                     <div className='px-1 py-1.5'>
                       {user && (
-                        <UserAvatarProfile
-                          className='h-8 w-8 rounded-lg'
-                          showInfo
-                          user={{
-                            imageUrl: user.image || undefined,
-                            fullName: user.name,
-                            emailAddresses: [{ emailAddress: user.email }]
-                          }}
-                        />
+                        <div className='flex items-center gap-2'>
+                          <UserAvatarProfile
+                            className='h-8 w-8 rounded-lg'
+                            showInfo
+                            user={{
+                              imageUrl: user.image || undefined,
+                              fullName: user.name,
+                              emailAddresses: [{ emailAddress: user.email }]
+                            }}
+                          />
+                          <Badge
+                            variant={
+                              (user as Record<string, unknown>).plan === 'pro'
+                                ? 'default'
+                                : 'secondary'
+                            }
+                            className='text-xs'
+                          >
+                            {(user as Record<string, unknown>).plan === 'pro' ? 'Pro' : 'Free'}
+                          </Badge>
+                        </div>
                       )}
                     </div>
                   </DropdownMenuLabel>

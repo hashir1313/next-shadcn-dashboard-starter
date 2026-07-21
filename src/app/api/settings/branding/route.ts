@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
-import { brandingConfigs } from '@/lib/db/schema';
+import { brandingConfigs, user } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function GET() {
@@ -23,6 +23,23 @@ export async function PUT(request: Request) {
   const userId = await getUserId();
   if (!userId) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Server-side plan check: only Pro users can update branding
+  const [dbUser] = await db
+    .select({ plan: user.plan })
+    .from(user)
+    .where(eq(user.id, userId))
+    .limit(1);
+
+  if (dbUser?.plan !== 'pro') {
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Branding is a Pro feature. Upgrade to Pro to customize your public pages.'
+      },
+      { status: 403 }
+    );
   }
 
   const body = await request.json();

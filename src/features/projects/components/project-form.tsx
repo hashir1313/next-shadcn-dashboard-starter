@@ -13,6 +13,8 @@ import * as z from 'zod';
 import { projectSchema, type ProjectFormValues } from '../schemas/project';
 import { useSession } from '@/lib/auth-client';
 import { Icons } from '@/components/icons';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ApiError } from '@/lib/api-client';
 
 export default function ProjectForm() {
   const router = useRouter();
@@ -20,19 +22,28 @@ export default function ProjectForm() {
   const userId = sessionData?.user?.id;
   const [initialTasks, setInitialTasks] = useState<string[]>([]);
   const [taskInput, setTaskInput] = useState('');
+  const [limitError, setLimitError] = useState<string | null>(null);
 
   const createMutation = useMutation({
     ...createProjectMutation,
     onSuccess: (data) => {
       toast.success('Project created successfully');
+      setLimitError(null);
       if (data.data) {
         router.push(`/dashboard/projects/${data.data.id}`);
       } else {
         router.push('/dashboard/projects');
       }
     },
-    onError: () => {
-      toast.error('Failed to create project');
+    onError: (error: Error) => {
+      if (error instanceof ApiError && error.data?.code === 'PROJECT_LIMIT_REACHED') {
+        setLimitError(
+          (error.data.message as string) ||
+            "You've reached the project limit. Upgrade to Pro for unlimited projects."
+        );
+      } else {
+        toast.error('Failed to create project');
+      }
     }
   });
 
@@ -89,6 +100,18 @@ export default function ProjectForm() {
       <CardContent>
         <form.AppForm>
           <form.Form className='space-y-6'>
+            {limitError && (
+              <Alert variant='destructive'>
+                <Icons.warning className='h-4 w-4' />
+                <AlertDescription className='flex items-center justify-between'>
+                  <span>{limitError}</span>
+                  <Button size='sm' onClick={() => router.push('/dashboard/billing')}>
+                    Upgrade to Pro
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <FormTextField
               name='name'
               label='Project Name'

@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { projects, tasks } from '@/lib/db/schema';
 import { eq, and, desc, asc, ilike, count, sql } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
+import { canCreateProject } from '@/features/billing/api/service';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -52,6 +53,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { success: false, message: 'userId and name required' },
       { status: 400 }
+    );
+  }
+
+  // Check project limit for free plan
+  const { allowed, current, limit } = await canCreateProject(userId);
+  if (!allowed) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: `You've reached the limit of ${limit} projects on the Free plan. Upgrade to Pro for unlimited projects.`,
+        code: 'PROJECT_LIMIT_REACHED',
+        current,
+        limit
+      },
+      { status: 403 }
     );
   }
 
