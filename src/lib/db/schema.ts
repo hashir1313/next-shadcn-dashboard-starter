@@ -36,6 +36,7 @@ export const user = pgTable('user', {
   publicEmail: text('public_email'),
   logoUrl: text('logo_url'),
   plan: userPlanEnum('plan').notNull().default('free'),
+  paddleSubscriptionId: text('paddle_subscription_id'),
   status: userStatusEnum('status').notNull().default('active'),
   dashboardTheme: text('dashboard_theme').notNull().default('vercel'),
   dashboardMode: dashboardModeEnum('dashboard_mode').notNull().default('system')

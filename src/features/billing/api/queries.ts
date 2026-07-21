@@ -7,7 +7,8 @@ export type { UserPlanInfo } from './types';
 export const billingKeys = {
   all: ['billing'] as const,
   plan: (userId: string) => [...billingKeys.all, 'plan', userId] as const,
-  projectLimit: (userId: string) => [...billingKeys.all, 'projectLimit', userId] as const
+  projectLimit: (userId: string) => [...billingKeys.all, 'projectLimit', userId] as const,
+  invoices: (userId: string) => [...billingKeys.all, 'invoices', userId] as const
 };
 
 export type PlanResponse = {

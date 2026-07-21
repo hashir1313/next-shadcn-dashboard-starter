@@ -48,34 +48,34 @@ export async function POST(request: NextRequest) {
 
   console.log('[Webhook] Received event:', eventType);
 
-  if (eventType === 'subscription.created' || eventType === 'subscription.updated') {
-    const customData = data?.custom_data as Record<string, unknown> | undefined;
-    const userId = customData?.userId as string | undefined;
-    const status = data?.status as string | undefined;
+  const customData = data?.custom_data as Record<string, unknown> | undefined;
+  const userId = customData?.userId as string | undefined;
+  const subscriptionId = data?.id as string | undefined;
+  const status = data?.status as string | undefined;
 
+  if (eventType === 'subscription.created' || eventType === 'subscription.updated') {
     if (userId) {
+      const updateData: Record<string, unknown> = { updatedAt: new Date() };
+
       if (status === 'active' || status === 'trialing') {
-        await db
-          .update(user)
-          .set({ plan: 'pro', updatedAt: new Date() })
-          .where(eq(user.id, userId));
+        updateData.plan = 'pro';
+        if (subscriptionId) updateData.paddleSubscriptionId = subscriptionId;
         console.log('[Webhook] Upgraded user to Pro:', userId);
       } else if (status === 'cancelled' || status === 'past_due') {
-        await db
-          .update(user)
-          .set({ plan: 'free', updatedAt: new Date() })
-          .where(eq(user.id, userId));
+        updateData.plan = 'free';
         console.log('[Webhook] Downgraded user to Free:', userId);
       }
+
+      await db.update(user).set(updateData).where(eq(user.id, userId));
     }
   }
 
   if (eventType === 'subscription.cancelled') {
-    const customData = data?.custom_data as Record<string, unknown> | undefined;
-    const userId = customData?.userId as string | undefined;
-
     if (userId) {
-      await db.update(user).set({ plan: 'free', updatedAt: new Date() }).where(eq(user.id, userId));
+      await db
+        .update(user)
+        .set({ plan: 'free', paddleSubscriptionId: null, updatedAt: new Date() })
+        .where(eq(user.id, userId));
       console.log('[Webhook] Downgraded user to Free (cancelled):', userId);
     }
   }

@@ -18,6 +18,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { Paddle } from '@paddle/paddle-js';
 
+type Invoice = {
+  id: string;
+  status: string;
+  createdAt: string;
+  currency: string;
+  total: number;
+  invoiceNumber: string;
+};
+
 export default function BillingPage() {
   const { data: sessionData } = useSession();
   const user = sessionData?.user;
@@ -36,8 +45,18 @@ export default function BillingPage() {
     enabled: !!userId
   });
 
+  const { data: invoiceData } = useQuery({
+    queryKey: billingKeys.invoices(userId),
+    queryFn: async () => {
+      const res = await fetch(`/api/billing/invoices?userId=${userId}`);
+      return res.json() as Promise<{ success: boolean; data: Invoice[] }>;
+    },
+    enabled: !!userId && (planData?.data?.plan ?? 'free') === 'pro'
+  });
+
   const currentPlan = planData?.data?.plan ?? 'free';
   const projectInfo = limitData?.data;
+  const invoices = invoiceData?.data ?? [];
   const searchParams = useSearchParams();
   const successParam = searchParams.get('success');
 
@@ -73,6 +92,25 @@ export default function BillingPage() {
     }
   });
 
+  const portalMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/billing/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to open portal');
+      return data;
+    },
+    onSuccess: (data) => {
+      window.location.href = data.data.url;
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to open subscription management');
+    }
+  });
+
   useEffect(() => {
     if (PADDLE_CLIENT_TOKEN && !paddleRef.current) {
       import('@paddle/paddle-js').then(({ initializePaddle }) => {
@@ -93,11 +131,6 @@ export default function BillingPage() {
 
   const handleCheckout = useCallback(
     (planId: string) => {
-      if (planId === 'free') {
-        checkoutMutation.mutate({ planId: 'free' });
-        return;
-      }
-
       if (paddleReady && paddleRef.current) {
         paddleRef.current.Checkout.open({
           items: [{ priceId: PADDLE_PRO_PRICE_ID, quantity: 1 }],
@@ -111,8 +144,23 @@ export default function BillingPage() {
         toast.error('Payment system is loading. Please try again in a moment.');
       }
     },
-    [paddleReady, user?.email, userId, checkoutMutation]
+    [paddleReady, user?.email, userId]
   );
+
+  function formatAmount(total: number, currency: string) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency.toUpperCase()
+    }).format(total / 100);
+  }
+
+  function formatDate(dateStr: string) {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
 
   return (
     <PageContainer
@@ -120,6 +168,7 @@ export default function BillingPage() {
       pageDescription='Manage your subscription and usage limits.'
     >
       <div className='space-y-6'>
+        {/* Current Plan */}
         <Card>
           <CardHeader>
             <CardTitle>Current Plan</CardTitle>
@@ -144,13 +193,29 @@ export default function BillingPage() {
                 <div className='text-muted-foreground text-sm'>Unlimited projects</div>
               )}
             </div>
+            {currentPlan === 'pro' && (
+              <div className='mt-4'>
+                <Button
+                  variant='outline'
+                  onClick={() => portalMutation.mutate()}
+                  disabled={portalMutation.isPending}
+                >
+                  {portalMutation.isPending ? (
+                    <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />
+                  ) : (
+                    <Icons.settings className='mr-2 h-4 w-4' />
+                  )}
+                  Manage Subscription
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
+        {/* Plans */}
         <div className='grid gap-4 md:grid-cols-2'>
           {PLANS.map((plan) => {
             const isCurrent = currentPlan === plan.id;
-            const isDowngrade = currentPlan === 'pro' && plan.id === 'free';
 
             return (
               <Card key={plan.id} className={isCurrent ? 'border-primary/50' : ''}>
@@ -180,21 +245,16 @@ export default function BillingPage() {
                       </li>
                     ))}
                   </ul>
-                  {!isCurrent && (
+                  {!isCurrent && plan.id === 'pro' && (
                     <Button
                       className='w-full'
-                      variant={isDowngrade ? 'outline' : 'default'}
                       onClick={() => handleCheckout(plan.id)}
                       disabled={checkoutMutation.isPending}
                     >
                       {checkoutMutation.isPending && (
                         <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />
                       )}
-                      {isDowngrade
-                        ? 'Downgrade to Free'
-                        : currentPlan === 'free'
-                          ? 'Upgrade to Pro'
-                          : 'Switch Plan'}
+                      Upgrade to Pro
                     </Button>
                   )}
                   {isCurrent && (
@@ -207,6 +267,51 @@ export default function BillingPage() {
             );
           })}
         </div>
+
+        {/* Invoice History */}
+        {currentPlan === 'pro' && invoices.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Invoice History</CardTitle>
+              <CardDescription>Your past payments and invoices</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='space-y-3'>
+                {invoices.map((invoice) => (
+                  <div
+                    key={invoice.id}
+                    className='flex items-center justify-between rounded-lg border p-3'
+                  >
+                    <div className='flex items-center gap-4'>
+                      <div>
+                        <p className='text-sm font-medium'>{invoice.invoiceNumber || invoice.id}</p>
+                        <p className='text-muted-foreground text-xs'>
+                          {formatDate(invoice.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className='flex items-center gap-3'>
+                      <Badge
+                        variant={
+                          invoice.status === 'paid'
+                            ? 'default'
+                            : invoice.status === 'failed'
+                              ? 'destructive'
+                              : 'secondary'
+                        }
+                      >
+                        {invoice.status}
+                      </Badge>
+                      <span className='text-sm font-medium'>
+                        {formatAmount(invoice.total, invoice.currency)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </PageContainer>
   );
