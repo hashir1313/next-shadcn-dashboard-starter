@@ -12,8 +12,7 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
   trustedOrigins: [
     process.env.BETTER_AUTH_URL!,
-    'https://next-shadcn-dashboard-starter-mu.vercel.app',
-    'https://next-shadcn-dashboard-starter-llojrgucb-hashirshabbir.vercel.app'
+    'https://next-shadcn-dashboard-starter-mu.vercel.app'
   ],
   emailAndPassword: {
     enabled: true,
